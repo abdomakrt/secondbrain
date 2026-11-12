@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
+import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../domain/progress.dart';
@@ -100,7 +101,10 @@ class ProjectDetailScreen extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l.projectDetails)),
-      body: ProjectDetailView(projectId: projectId),
+      body: ContentWidth(
+        maxWidth: ContentWidths.details,
+        child: ProjectDetailView(projectId: projectId),
+      ),
     );
   }
 }

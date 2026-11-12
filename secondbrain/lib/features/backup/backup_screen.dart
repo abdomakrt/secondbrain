@@ -10,6 +10,7 @@ import '../../app/app_deps.dart';
 import '../../app/app_scope.dart';
 import '../../backup/backup_service.dart';
 import '../../backup/export_service.dart';
+import '../common/widgets/content_width.dart';
 
 /// Backup/restore/export screen (spec §11).
 ///
@@ -39,26 +40,30 @@ class _BackupScreenState extends State<BackupScreen> {
 
   Future<void> _loadDaily() async {
     final scope = AppScope.of(context);
-    final row = await (scope.db.select(scope.db.settings)
-          ..where((s) => s.key.equals('auto_backup_daily')))
-        .getSingleOrNull();
+    final row = await (scope.db.select(
+      scope.db.settings,
+    )..where((s) => s.key.equals('auto_backup_daily'))).getSingleOrNull();
     if (mounted) setState(() => _daily = row?.value == '1');
   }
 
   Future<void> _setDaily(bool value) async {
     final scope = AppScope.of(context);
     await scope.gate.write((tx) async {
-      final existing = await (tx.db.select(tx.db.settings)
-            ..where((s) => s.key.equals('auto_backup_daily')))
-          .getSingleOrNull();
+      final existing = await (tx.db.select(
+        tx.db.settings,
+      )..where((s) => s.key.equals('auto_backup_daily'))).getSingleOrNull();
       if (existing != null) {
         await (tx.db.update(tx.db.settings)
               ..where((s) => s.key.equals('auto_backup_daily')))
             .write(SettingsCompanion(value: Value(value ? '1' : '0')));
       } else {
-        await tx.db.into(tx.db.settings).insert(
+        await tx.db
+            .into(tx.db.settings)
+            .insert(
               SettingsCompanion.insert(
-                  key: 'auto_backup_daily', value: value ? '1' : '0'),
+                key: 'auto_backup_daily',
+                value: value ? '1' : '0',
+              ),
             );
       }
     });
@@ -76,8 +81,8 @@ class _BackupScreenState extends State<BackupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content:
-                  Text('${AppLocalizations.of(context)!.restoreFailed}: $e')),
+            content: Text('${AppLocalizations.of(context)!.restoreFailed}: $e'),
+          ),
         );
       }
     } finally {
@@ -91,12 +96,12 @@ class _BackupScreenState extends State<BackupScreen> {
     final dirPath = await getDirectoryPath();
     if (dirPath == null) return; // المستخدم ألغى الاختيار
     await _run(() async {
-      final file =
-          await BackupService(deps: scope.deps).create(destDir: Directory(dirPath));
+      final file = await BackupService(deps: scope.deps)
+          .create(destDir: Directory(dirPath));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l.backupDone} ${file.path}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${l.backupDone} ${file.path}')));
       }
     });
   }
@@ -123,9 +128,11 @@ class _BackupScreenState extends State<BackupScreen> {
               Text('${l.backupIntegrity}: ${r.integrity}'),
               Text('${l.backupCounts}: ${r.counts}'),
               Text(
-                  '${l.missingBlobs}: ${r.missingBlobs.isEmpty ? l.noMissingBlobs : r.missingBlobs.join(", ")}'),
+                '${l.missingBlobs}: ${r.missingBlobs.isEmpty ? l.noMissingBlobs : r.missingBlobs.join(", ")}',
+              ),
               Text(
-                  '${l.corruptBlobs}: ${r.corruptBlobs.isEmpty ? l.noCorruptBlobs : r.corruptBlobs.join(", ")}'),
+                '${l.corruptBlobs}: ${r.corruptBlobs.isEmpty ? l.noCorruptBlobs : r.corruptBlobs.join(", ")}',
+              ),
             ],
           ),
         ),
@@ -178,9 +185,8 @@ class _BackupScreenState extends State<BackupScreen> {
     appDepsSwapRequest.value = newDeps;
     if (mounted) {
       // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l.restoreDone)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l.restoreDone)));
     }
   }
 
@@ -196,9 +202,8 @@ class _BackupScreenState extends State<BackupScreen> {
         blobsDir: scope.attachments.blobsDir,
       ).export(Directory(dirPath));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$l.exportDone $dirPath')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$l.exportDone $dirPath')));
       }
     });
   }
@@ -208,46 +213,49 @@ class _BackupScreenState extends State<BackupScreen> {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l.backupTitle)),
-      body: AbsorbPointer(
-        absorbing: _busy,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            FilledButton.icon(
-              icon: const Icon(Icons.backup),
-              label: Text(l.createBackup),
-              onPressed: _createBackup,
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.verified_outlined),
-              label: Text(l.verifyBackup),
-              onPressed: _verifyBackup,
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.restore),
-              label: Text(l.restoreBackup),
-              onPressed: _restoreBackup,
-            ),
-            const Divider(height: 32),
-            SwitchListTile(
-              title: Text(l.autoDailyBackup),
-              value: _daily,
-              onChanged: (v) => _setDaily(v),
-            ),
-            const Divider(height: 32),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.file_upload_outlined),
-              label: Text(l.exportMd),
-              onPressed: _exportMarkdown,
-            ),
-            if (_busy)
-              const Padding(
-                padding: EdgeInsets.only(top: 24),
-                child: Center(child: CircularProgressIndicator()),
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: AbsorbPointer(
+          absorbing: _busy,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              FilledButton.icon(
+                icon: const Icon(Icons.backup),
+                label: Text(l.createBackup),
+                onPressed: _createBackup,
               ),
-          ],
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.verified_outlined),
+                label: Text(l.verifyBackup),
+                onPressed: _verifyBackup,
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.restore),
+                label: Text(l.restoreBackup),
+                onPressed: _restoreBackup,
+              ),
+              const Divider(height: 32),
+              SwitchListTile(
+                title: Text(l.autoDailyBackup),
+                value: _daily,
+                onChanged: (v) => _setDaily(v),
+              ),
+              const Divider(height: 32),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.file_upload_outlined),
+                label: Text(l.exportMd),
+                onPressed: _exportMarkdown,
+              ),
+              if (_busy)
+                const Padding(
+                  padding: EdgeInsets.only(top: 24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+            ],
+          ),
         ),
       ),
     );

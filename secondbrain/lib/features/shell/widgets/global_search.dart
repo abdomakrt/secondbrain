@@ -25,20 +25,31 @@ class GlobalSearch extends StatefulWidget {
 }
 
 class _GlobalSearchState extends State<GlobalSearch> {
-  late final TextEditingController _controller =
-      widget.controller ?? TextEditingController();
+  /// The controller owned by this widget (used when the shell passes none).
+  TextEditingController? _internal;
+
+  late TextEditingController _controller;
+
   final _focus = FocusNode();
-  bool _ownsController = false;
 
   @override
   void initState() {
     super.initState();
-    _ownsController = widget.controller == null;
+    _controller = widget.controller ?? (_internal = TextEditingController());
+  }
+
+  @override
+  void didUpdateWidget(covariant GlobalSearch old) {
+    super.didUpdateWidget(old);
+    // The shell may swap the controller (or drop it) — follow it instead of
+    // keeping a stale one.
+    if (identical(widget.controller, _controller)) return;
+    _controller = widget.controller ?? (_internal ??= TextEditingController());
   }
 
   @override
   void dispose() {
-    if (_ownsController) _controller.dispose();
+    _internal?.dispose();
     _focus.dispose();
     super.dispose();
   }

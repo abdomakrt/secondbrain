@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../platform/desktop/desktop_capture.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 import '../common/widgets/db_stream_builder.dart';
 import '../common/widgets/project_dropdown.dart';
 
@@ -78,8 +79,9 @@ class _CaptureWindowState extends State<CaptureWindow> {
   Future<void> _bootstrap() async {
     final scope = AppScope.of(context);
     final types = await scope.itemTypes.builtin();
-    final activeProject =
-        await scope.settings.get(SettingsRepository.keyActiveCaptureProject);
+    final activeProject = await scope.settings.get(
+      SettingsRepository.keyActiveCaptureProject,
+    );
     if (!mounted) return;
 
     // 1. The selection, 2. the clipboard, 3. the shared text (Android).
@@ -121,11 +123,13 @@ class _CaptureWindowState extends State<CaptureWindow> {
     }
 
     // The type defaults to «رابط» when the content is only a link.
-    final isLink = content != null &&
+    final isLink =
+        content != null &&
         content.trim().startsWith('http') &&
         !content.trim().contains(' ');
     final wantedType = isLink ? 'رابط' : 'ملاحظة';
-    final type = types.where((t) => t.name == wantedType).firstOrNull ??
+    final type =
+        types.where((t) => t.name == wantedType).firstOrNull ??
         (types.isEmpty ? null : types.first);
 
     if (!mounted) return;
@@ -133,8 +137,9 @@ class _CaptureWindowState extends State<CaptureWindow> {
       _content.text = content ?? '';
       _sourceLabel = sourceLabel;
       _typeId = type?.id;
-      _projectId =
-          (activeProject == null || activeProject.isEmpty) ? null : activeProject;
+      _projectId = (activeProject == null || activeProject.isEmpty)
+          ? null
+          : activeProject;
       _loading = false;
     });
   }
@@ -157,12 +162,15 @@ class _CaptureWindowState extends State<CaptureWindow> {
         commentMd: _comment.text.trim().isEmpty ? null : _comment.text.trim(),
         projectId: _projectId,
         isInbox: _projectId == null,
-        sourceUrl:
-            _sourceUrl.text.trim().isEmpty ? null : _sourceUrl.text.trim(),
-        sourceTitle:
-            _sourceTitle.text.trim().isEmpty ? null : _sourceTitle.text.trim(),
-        sourceApp:
-            _sourceApp.text.trim().isEmpty ? null : _sourceApp.text.trim(),
+        sourceUrl: _sourceUrl.text.trim().isEmpty
+            ? null
+            : _sourceUrl.text.trim(),
+        sourceTitle: _sourceTitle.text.trim().isEmpty
+            ? null
+            : _sourceTitle.text.trim(),
+        sourceApp: _sourceApp.text.trim().isEmpty
+            ? null
+            : _sourceApp.text.trim(),
         sourceKind: 'capture',
         capturedAt: DateTime.now().millisecondsSinceEpoch,
       );
@@ -192,162 +200,167 @@ class _CaptureWindowState extends State<CaptureWindow> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.captureTitle)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (!widget.platform.isSupported)
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: Text(l.captureUnavailable),
-                subtitle: Text(
-                  widget.platform.unavailableReason ??
-                      l.captureUnavailableHint,
+      body: ContentWidth(
+        maxWidth: ContentWidths.capture,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (!widget.platform.isSupported)
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(l.captureUnavailable),
+                  subtitle: Text(
+                    widget.platform.unavailableReason ??
+                        l.captureUnavailableHint,
+                  ),
                 ),
               ),
-            ),
-          if (_sourceLabel.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Chip(
-                avatar: const Icon(Icons.my_location, size: 16),
-                label: Text(_sourceLabel),
+            if (_sourceLabel.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Chip(
+                  avatar: const Icon(Icons.my_location, size: 16),
+                  label: Text(_sourceLabel),
+                ),
               ),
-            ),
-          DbStreamBuilder<List<ItemType>>(
-            streamFactory: () => scope.itemTypes.watchBuiltin(),
-            builder: (context, snap) {
-              final types = snap.data ?? const <ItemType>[];
-              final items = types
-                  .map((t) => DropdownMenuItem<String>(
+            DbStreamBuilder<List<ItemType>>(
+              streamFactory: () => scope.itemTypes.watchBuiltin(),
+              builder: (context, snap) {
+                final types = snap.data ?? const <ItemType>[];
+                final items = types
+                    .map(
+                      (t) => DropdownMenuItem<String>(
                         value: t.id,
                         child: Text(t.name),
-                      ))
-                  .toList();
-              final selected = _typeId;
-              if (selected != null && !types.any((t) => t.id == selected)) {
-                items.add(
-                  DropdownMenuItem<String>(value: selected, child: Text('…')),
+                      ),
+                    )
+                    .toList();
+                final selected = _typeId;
+                if (selected != null && !types.any((t) => t.id == selected)) {
+                  items.add(
+                    DropdownMenuItem<String>(value: selected, child: Text('…')),
+                  );
+                }
+                return DropdownButtonFormField<String>(
+                  initialValue: selected,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: l.typeLabel,
+                    prefixIcon: const Icon(Icons.category_outlined),
+                    border: const OutlineInputBorder(),
+                  ),
+                  items: items,
+                  onChanged: (v) => setState(() => _typeId = v),
                 );
-              }
-              return DropdownButtonFormField<String>(
-                initialValue: selected,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: l.typeLabel,
-                  prefixIcon: const Icon(Icons.category_outlined),
-                  border: const OutlineInputBorder(),
-                ),
-                items: items,
-                onChanged: (v) => setState(() => _typeId = v),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          ProjectDropdown(
-            label: l.captureProject,
-            noneLabel: l.inboxDestination,
-            value: _projectId,
-            onChanged: (v) => setState(() => _projectId = v),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _title,
-            decoration: InputDecoration(
-              labelText: l.titleLabelOptional,
-              border: const OutlineInputBorder(),
+              },
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _content,
-            minLines: 4,
-            maxLines: 10,
-            decoration: InputDecoration(
-              labelText: l.contentLabel,
-              alignLabelWithHint: true,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            ProjectDropdown(
+              label: l.captureProject,
+              noneLabel: l.inboxDestination,
+              value: _projectId,
+              onChanged: (v) => setState(() => _projectId = v),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _comment,
-            maxLines: 2,
-            decoration: InputDecoration(
-              labelText: l.commentLabel,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _title,
+              decoration: InputDecoration(
+                labelText: l.titleLabelOptional,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ExpansionTile(
-            title: Text(l.sourceDetails),
-            children: [
-              TextField(
-                controller: _sourceTitle,
-                decoration: InputDecoration(
-                  labelText: l.sourceTitleLabel,
-                  border: const OutlineInputBorder(),
-                ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _content,
+              minLines: 4,
+              maxLines: 10,
+              decoration: InputDecoration(
+                labelText: l.contentLabel,
+                alignLabelWithHint: true,
+                border: const OutlineInputBorder(),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _sourceUrl,
-                textDirection: TextDirection.ltr,
-                decoration: InputDecoration(
-                  labelText: l.sourceUrlLabel,
-                  border: const OutlineInputBorder(),
-                ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _comment,
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: l.commentLabel,
+                border: const OutlineInputBorder(),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _sourceApp,
-                decoration: InputDecoration(
-                  labelText: l.sourceAppLabel,
-                  border: const OutlineInputBorder(),
+            ),
+            const SizedBox(height: 12),
+            ExpansionTile(
+              title: Text(l.sourceDetails),
+              children: [
+                TextField(
+                  controller: _sourceTitle,
+                  decoration: InputDecoration(
+                    labelText: l.sourceTitleLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton.icon(
-                  onPressed: () {
-                    _sourceUrl.clear();
-                    _sourceTitle.clear();
-                    _sourceApp.clear();
-                  },
-                  icon: const Icon(Icons.delete_outline),
-                  label: Text(l.clearSource),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _sourceUrl,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(
+                    labelText: l.sourceUrlLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  key: const Key('capture-save'),
-                  onPressed: _state == CaptureState.saving ? null : _save,
-                  icon: _state == CaptureState.saving
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save_outlined),
-                  label: Text(l.save),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _sourceApp,
+                  decoration: InputDecoration(
+                    labelText: l.sourceAppLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l.cancel),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      _sourceUrl.clear();
+                      _sourceTitle.clear();
+                      _sourceApp.clear();
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l.clearSource),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const Key('capture-save'),
+                    onPressed: _state == CaptureState.saving ? null : _save,
+                    icon: _state == CaptureState.saving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_outlined),
+                    label: Text(l.save),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l.cancel),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

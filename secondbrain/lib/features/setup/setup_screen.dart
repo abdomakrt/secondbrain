@@ -10,6 +10,7 @@ import '../../backup/backup_service.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../sync/connection.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 import '../common/widgets/connection_status_badge.dart';
 
 /// Welcome and first-run setup (UI_SPEC §5, UI-01).
@@ -50,69 +51,76 @@ class _SetupScreenState extends State<SetupScreen> {
         child: Column(
           children: [
             Expanded(
-              child: Stepper(
-                currentStep: _step,
-                onStepTapped: (s) => setState(() => _step = s),
-                controlsBuilder: (context, details) => const SizedBox.shrink(),
-                steps: [
-                  Step(
-                    title: Text(l.setupWelcome),
-                    isActive: _step >= 0,
-                    state: _step > 0 ? StepState.complete : StepState.indexed,
-                    content: _WelcomeStep(
-                      themeMode: _themeMode,
-                      onTheme: (m) => setState(() => _themeMode = m),
+              child: ContentWidth(
+                maxWidth: ContentWidths.form,
+                child: Stepper(
+                  currentStep: _step,
+                  onStepTapped: (s) => setState(() => _step = s),
+                  controlsBuilder: (context, details) =>
+                      const SizedBox.shrink(),
+                  steps: [
+                    Step(
+                      title: Text(l.setupWelcome),
+                      isActive: _step >= 0,
+                      state: _step > 0 ? StepState.complete : StepState.indexed,
+                      content: _WelcomeStep(
+                        themeMode: _themeMode,
+                        onTheme: (m) => setState(() => _themeMode = m),
+                      ),
                     ),
-                  ),
-                  Step(
-                    title: Text(l.setupData),
-                    isActive: _step >= 1,
-                    state: _step > 1 ? StepState.complete : StepState.indexed,
-                    content: _DataStep(
-                      busy: _busy,
-                      onNewSetup: _newSetup,
-                      onRestore: _restoreBackup,
+                    Step(
+                      title: Text(l.setupData),
+                      isActive: _step >= 1,
+                      state: _step > 1 ? StepState.complete : StepState.indexed,
+                      content: _DataStep(
+                        busy: _busy,
+                        onNewSetup: _newSetup,
+                        onRestore: _restoreBackup,
+                      ),
                     ),
-                  ),
-                  Step(
-                    title: Text(l.setupPairing),
-                    isActive: _step >= 2,
-                    state: _step > 2 ? StepState.complete : StepState.indexed,
-                    content: _PairingStep(
-                      serverAddress: _serverAddress,
-                      pairingCode: _pairingCode,
-                      state: _connection,
-                      message: _connectionMessage,
-                      onAddress: (v) => setState(() => _serverAddress = v),
-                      onCode: (v) => _pairingCode.text = v,
-                      onTest: _testConnection,
+                    Step(
+                      title: Text(l.setupPairing),
+                      isActive: _step >= 2,
+                      state: _step > 2 ? StepState.complete : StepState.indexed,
+                      content: _PairingStep(
+                        serverAddress: _serverAddress,
+                        pairingCode: _pairingCode,
+                        state: _connection,
+                        message: _connectionMessage,
+                        onAddress: (v) => setState(() => _serverAddress = v),
+                        onCode: (v) => _pairingCode.text = v,
+                        onTest: _testConnection,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  if (_step > 0)
-                    TextButton(
-                      onPressed: () => setState(() => _step--),
-                      child: Text(l.back),
-                    ),
-                  const Spacer(),
-                  if (_step < 2)
-                    FilledButton(
-                      onPressed: () => setState(() => _step++),
-                      child: Text(l.next),
-                    )
-                  else
-                    FilledButton.icon(
-                      onPressed: _finish,
-                      icon: const Icon(Icons.check),
-                      label: Text(l.finishSetup),
-                    ),
-                ],
+              child: ContentWidth(
+                maxWidth: ContentWidths.form,
+                child: Row(
+                  children: [
+                    if (_step > 0)
+                      TextButton(
+                        onPressed: () => setState(() => _step--),
+                        child: Text(l.back),
+                      ),
+                    const Spacer(),
+                    if (_step < 2)
+                      FilledButton(
+                        onPressed: () => setState(() => _step++),
+                        child: Text(l.next),
+                      )
+                    else
+                      FilledButton.icon(
+                        onPressed: _finish,
+                        icon: const Icon(Icons.check),
+                        label: Text(l.finishSetup),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -176,7 +184,9 @@ class _SetupScreenState extends State<SetupScreen> {
     );
     if (!mounted) return;
     await scope.settings.set(
-        SettingsRepository.keyServerAddress, _serverAddress.trim());
+      SettingsRepository.keyServerAddress,
+      _serverAddress.trim(),
+    );
     if (!mounted) return;
     setState(() {
       _connection = result.state;
@@ -210,8 +220,9 @@ class _WelcomeStep extends StatelessWidget {
       children: [
         Text(
           l.appTitle,
-          style: theme.textTheme.headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         Text(l.appTagline),
@@ -272,10 +283,7 @@ class _DataStep extends StatelessWidget {
           icon: const Icon(Icons.restore),
           label: Text(l.setupRestore),
         ),
-        if (busy) ...[
-          const SizedBox(height: 16),
-          const LoadingView(),
-        ],
+        if (busy) ...[const SizedBox(height: 16), const LoadingView()],
       ],
     );
   }
@@ -315,10 +323,7 @@ class _PairingStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l.setupServerHint,
-                  style: theme.textTheme.titleSmall,
-                ),
+                Text(l.setupServerHint, style: theme.textTheme.titleSmall),
                 const SizedBox(height: 4),
                 Text(
                   'secondbrain --serve',
@@ -337,10 +342,7 @@ class _PairingStep extends StatelessWidget {
             ConnectionStatusBadge(state: state),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                message ?? '',
-                style: theme.textTheme.bodySmall,
-              ),
+              child: Text(message ?? '', style: theme.textTheme.bodySmall),
             ),
           ],
         ),
@@ -371,10 +373,7 @@ class _PairingStep extends StatelessWidget {
           label: Text(l.testConnection),
         ),
         const SizedBox(height: 8),
-        Text(
-          l.setupQrHint,
-          style: theme.textTheme.bodySmall,
-        ),
+        Text(l.setupQrHint, style: theme.textTheme.bodySmall),
       ],
     );
   }

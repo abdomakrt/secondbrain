@@ -3,6 +3,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 
 /// Create or edit a course (quick-add menu and the courses screen).
 class CourseEditScreen extends StatefulWidget {
@@ -93,35 +94,38 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _title,
-            autofocus: widget.courseId == null,
-            decoration: InputDecoration(
-              labelText: l.courseNameLabel,
-              border: const OutlineInputBorder(),
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextField(
+              controller: _title,
+              autofocus: widget.courseId == null,
+              decoration: InputDecoration(
+                labelText: l.courseNameLabel,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _description,
-            minLines: 2,
-            maxLines: 5,
-            decoration: InputDecoration(
-              labelText: l.descriptionLabel,
-              alignLabelWithHint: true,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              minLines: 2,
+              maxLines: 5,
+              decoration: InputDecoration(
+                labelText: l.descriptionLabel,
+                alignLabelWithHint: true,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _saving ? null : _save,
-            icon: const Icon(Icons.save_outlined),
-            label: Text(l.save),
-          ),
-        ],
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _saving ? null : _save,
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l.save),
+            ),
+          ],
+        ),
       ),
     );
   }

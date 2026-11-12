@@ -3,6 +3,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
 import '../common/labels.dart';
+import '../common/widgets/content_width.dart';
 import '../common/widgets/common_widgets.dart';
 
 /// Create a project (quick form used by the quick-add menu and the FAB).
@@ -103,65 +104,68 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _name,
-            autofocus: widget.projectId == null,
-            decoration: InputDecoration(
-              labelText: l.projectNameLabel,
-              border: const OutlineInputBorder(),
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextField(
+              controller: _name,
+              autofocus: widget.projectId == null,
+              decoration: InputDecoration(
+                labelText: l.projectNameLabel,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _goal,
-            decoration: InputDecoration(
-              labelText: l.projectGoalLabel,
-              hintText: l.projectGoalHint,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _goal,
+              decoration: InputDecoration(
+                labelText: l.projectGoalLabel,
+                hintText: l.projectGoalHint,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _description,
-            minLines: 3,
-            maxLines: 6,
-            decoration: InputDecoration(
-              labelText: l.descriptionLabel,
-              alignLabelWithHint: true,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              minLines: 3,
+              maxLines: 6,
+              decoration: InputDecoration(
+                labelText: l.descriptionLabel,
+                alignLabelWithHint: true,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(l.status, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final s in const [
-                'planned',
-                'active',
-                'paused',
-                'completed',
-                'archived'
-              ])
-                ChoiceChip(
-                  selected: _status == s,
-                  label: Text(projectStatusLabel(context, s)),
-                  onSelected: (_) => setState(() => _status = s),
-                ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _saving ? null : _save,
-            icon: const Icon(Icons.save_outlined),
-            label: Text(l.save),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(l.status, style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final s in const [
+                  'planned',
+                  'active',
+                  'paused',
+                  'completed',
+                  'archived',
+                ])
+                  ChoiceChip(
+                    selected: _status == s,
+                    label: Text(projectStatusLabel(context, s)),
+                    onSelected: (_) => setState(() => _status = s),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _saving ? null : _save,
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l.save),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import '../../app/app_scope.dart';
 import '../../platform/desktop/capture_service.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 import '../capture/capture_window.dart';
 import '../courses/course_edit_screen.dart';
 import '../courses/courses_screen.dart';
@@ -290,7 +291,7 @@ class AppShellState extends State<AppShell> {
   // --------------------------------------------------------------- content
 
   Widget _sectionBody(BuildContext context) {
-    return switch (_section) {
+    final child = switch (_section) {
       AppSection.dashboard => DashboardScreen(onSelectSection: select),
       AppSection.tasks => const TasksScreen(),
       AppSection.projects => const ProjectsScreen(),
@@ -301,7 +302,26 @@ class AppShellState extends State<AppShell> {
       AppSection.settings => const SettingsScreen(),
       AppSection.trash => const TrashScreen(),
     };
+    // On wide screens the content keeps a readable width instead of
+    // stretching across the whole window.
+    return ContentWidth(
+      maxWidth: _maxWidthOf(_section),
+      child: child,
+    );
   }
+
+  /// The width each section is allowed to use.
+  double _maxWidthOf(AppSection section) => switch (section) {
+        AppSection.dashboard => ContentWidths.dashboard,
+        AppSection.projects => ContentWidths.list,
+        AppSection.knowledge => ContentWidths.list,
+        AppSection.courses => ContentWidths.list,
+        AppSection.inbox => ContentWidths.list,
+        AppSection.tasks => ContentWidths.list,
+        AppSection.search => ContentWidths.list,
+        AppSection.settings => ContentWidths.details,
+        AppSection.trash => ContentWidths.details,
+      };
 
   /// The quick-add button next to the search box.
   ///
@@ -451,9 +471,15 @@ class _DesktopTopBar extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: GlobalSearch(
-              controller: searchController,
-              onSubmitted: onSearch,
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: GlobalSearch(
+                  controller: searchController,
+                  onSubmitted: onSearch,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 8),

@@ -6,6 +6,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../importers/keep_importer.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 
 /// Google Keep import (UI_SPEC §5, UI-14).
 ///
@@ -35,77 +36,75 @@ class _KeepImportScreenState extends State<KeepImportScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.keepImport)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l.keepImportDeferred,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l.keepImportDeferredHint,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.keepImportDeferred,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l.keepImportDeferredHint,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l.keepImportSteps,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          _Steps(steps: l.keepImportStepsList.split('\n')),
-          const SizedBox(height: 16),
-          Text(
-            l.keepImportPreserves,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          ...l.keepImportPreservesList.split('\n').map(
-            (s) => ListTile(
-              dense: true,
-              leading: const Icon(Icons.check_circle_outline),
-              title: Text(s),
-            ),
-          ),
-          const Divider(height: 32),
-          FilledButton.icon(
-            onPressed: _busy ? null : _pickArchive,
-            icon: const Icon(Icons.folder_open),
-            label: Text(l.chooseKeepArchive),
-          ),
-          if (_archive != null) ...[
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.archive_outlined),
-              title: Text(_archive!.path.split('/').last),
-              subtitle: Text(l.keepArchiveSelected),
-              trailing: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => setState(() => _archive = null),
-              ),
-            ),
-          ],
-          if (_busy) ...[
             const SizedBox(height: 16),
-            const LoadingView(),
+            Text(
+              l.keepImportSteps,
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _Steps(steps: l.keepImportStepsList.split('\n')),
+            const SizedBox(height: 16),
+            Text(
+              l.keepImportPreserves,
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...l.keepImportPreservesList
+                .split('\n')
+                .map(
+                  (s) => ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.check_circle_outline),
+                    title: Text(s),
+                  ),
+                ),
+            const Divider(height: 32),
+            FilledButton.icon(
+              onPressed: _busy ? null : _pickArchive,
+              icon: const Icon(Icons.folder_open),
+              label: Text(l.chooseKeepArchive),
+            ),
+            if (_archive != null) ...[
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.archive_outlined),
+                title: Text(_archive!.path.split('/').last),
+                subtitle: Text(l.keepArchiveSelected),
+                trailing: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() => _archive = null),
+                ),
+              ),
+            ],
+            if (_busy) ...[const SizedBox(height: 16), const LoadingView()],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -132,9 +131,11 @@ class _KeepImportScreenState extends State<KeepImportScreen> {
       );
       return;
     }
-    final file = await openFile(acceptedTypeGroups: const [
-      XTypeGroup(label: 'ZIP', extensions: ['zip']),
-    ]);
+    final file = await openFile(
+      acceptedTypeGroups: const [
+        XTypeGroup(label: 'ZIP', extensions: ['zip']),
+      ],
+    );
     if (file == null) return;
     setState(() => _busy = true);
     try {
@@ -163,10 +164,7 @@ class _Steps extends StatelessWidget {
         for (var i = 0; i < steps.length; i++)
           ListTile(
             dense: true,
-            leading: CircleAvatar(
-              radius: 12,
-              child: Text('${i + 1}'),
-            ),
+            leading: CircleAvatar(radius: 12, child: Text('${i + 1}')),
             title: Text(steps[i]),
           ),
       ],

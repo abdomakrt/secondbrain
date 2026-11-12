@@ -4,6 +4,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import '../../app/app_scope.dart';
 import '../../core/dates.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 import '../common/widgets/date_pickers.dart';
 import '../common/widgets/priority_selector.dart';
 import '../common/widgets/project_dropdown.dart';
@@ -75,104 +76,111 @@ class _TaskEditScreenState extends State<TaskEditScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _title,
-            autofocus: true,
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              labelText: l.titleLabel,
-              border: const OutlineInputBorder(),
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextField(
+              controller: _title,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                labelText: l.titleLabel,
+                border: const OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          PrioritySelector(
-            important: _important,
-            urgent: _urgent,
-            onChanged: ({required bool important, required bool urgent}) {
-              setState(() {
-                _important = important;
-                _urgent = urgent;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              DateField(
-                label: l.dueDate,
-                value: _dueAt,
-                onChanged: (v) => setState(() => _dueAt = v),
-              ),
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final day = await pickDay(context, current: _plannedDate);
-                  if (day != null) setState(() => _plannedDate = day);
-                },
-                icon: const Icon(Icons.event_outlined),
-                label: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l.plannedDay,
-                        style: Theme.of(context).textTheme.labelSmall),
-                    Text(
-                      _plannedDate == null
-                          ? '—'
-                          : relativeDayLabel(_plannedDate!),
-                    ),
-                  ],
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final time = await pickTimeOfDay(context, current: null);
-                  if (time != null) setState(() => _plannedStart = time);
-                },
-                icon: const Icon(Icons.schedule_outlined),
-                label: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l.plannedStart,
-                        style: Theme.of(context).textTheme.labelSmall),
-                    Text(
-                      formatMinutesOfDay(_plannedStart).isEmpty
-                          ? '—'
-                          : formatMinutesOfDay(_plannedStart),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _estimate,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: l.estimatedMinutes,
-              hintText: l.estimatedMinutesHint,
-              border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.timelapse_outlined),
+            const SizedBox(height: 16),
+            PrioritySelector(
+              important: _important,
+              urgent: _urgent,
+              onChanged: ({required bool important, required bool urgent}) {
+                setState(() {
+                  _important = important;
+                  _urgent = urgent;
+                });
+              },
             ),
-          ),
-          const SizedBox(height: 16),
-          ProjectDropdown(
-            value: _projectId,
-            onChanged: (v) => setState(() => _projectId = v),
-          ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _saving ? null : _save,
-            icon: const Icon(Icons.save_outlined),
-            label: Text(l.save),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                DateField(
+                  label: l.dueDate,
+                  value: _dueAt,
+                  onChanged: (v) => setState(() => _dueAt = v),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final day = await pickDay(context, current: _plannedDate);
+                    if (day != null) setState(() => _plannedDate = day);
+                  },
+                  icon: const Icon(Icons.event_outlined),
+                  label: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l.plannedDay,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      Text(
+                        _plannedDate == null
+                            ? '—'
+                            : relativeDayLabel(_plannedDate!),
+                      ),
+                    ],
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final time = await pickTimeOfDay(context, current: null);
+                    if (time != null) setState(() => _plannedStart = time);
+                  },
+                  icon: const Icon(Icons.schedule_outlined),
+                  label: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l.plannedStart,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      Text(
+                        formatMinutesOfDay(_plannedStart).isEmpty
+                            ? '—'
+                            : formatMinutesOfDay(_plannedStart),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _estimate,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l.estimatedMinutes,
+                hintText: l.estimatedMinutesHint,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.timelapse_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ProjectDropdown(
+              value: _projectId,
+              onChanged: (v) => setState(() => _projectId = v),
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _saving ? null : _save,
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l.save),
+            ),
+          ],
+        ),
       ),
     );
   }

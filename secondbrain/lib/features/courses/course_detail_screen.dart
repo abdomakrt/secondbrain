@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
+import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
 import '../../domain/progress.dart';
 import '../common/labels.dart';
@@ -92,7 +93,10 @@ class CourseDetailScreen extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l.courseDetails)),
-      body: CourseDetailView(courseId: courseId),
+      body: ContentWidth(
+        maxWidth: ContentWidths.details,
+        child: CourseDetailView(courseId: courseId),
+      ),
     );
   }
 }

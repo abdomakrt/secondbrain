@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
+import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
 import '../common/labels.dart';
 import '../common/widgets/common_widgets.dart';
@@ -56,7 +57,10 @@ class LessonDetailScreen extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l.lessonDetails)),
-      body: LessonDetailView(lessonId: lessonId),
+      body: ContentWidth(
+        maxWidth: ContentWidths.details,
+        child: LessonDetailView(lessonId: lessonId),
+      ),
     );
   }
 }

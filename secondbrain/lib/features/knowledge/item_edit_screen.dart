@@ -4,6 +4,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import '../../app/app_scope.dart';
 import '../../data/database.dart';
 import '../common/widgets/common_widgets.dart';
+import '../common/widgets/content_width.dart';
 import '../common/widgets/db_stream_builder.dart';
 import '../common/widgets/project_dropdown.dart';
 import 'item_detail_screen.dart';
@@ -73,7 +74,7 @@ class _ItemEditScreenState extends State<ItemEditScreen> {
       final selected = wanted == null
           ? (types.isEmpty ? null : types.first.id)
           : types.where((t) => t.name == wanted).firstOrNull?.id ??
-              (types.isEmpty ? null : types.first.id);
+                (types.isEmpty ? null : types.first.id);
       setState(() => _typeId = selected);
       return;
     }
@@ -115,15 +116,17 @@ class _ItemEditScreenState extends State<ItemEditScreen> {
         typeId: _typeId!,
         title: _title.text,
         bodyMd: _body.text,
-        commentMd:
-            _comment.text.trim().isEmpty ? null : _comment.text.trim(),
+        commentMd: _comment.text.trim().isEmpty ? null : _comment.text.trim(),
         isInbox: _isInbox,
         projectId: _projectId ?? widget.initialProjectId,
         courseId: widget.initialCourseId,
         lessonId: widget.initialLessonId,
-        sourceUrl: _sourceUrl.text.trim().isEmpty ? null : _sourceUrl.text.trim(),
-        sourceTitle:
-            _sourceTitle.text.trim().isEmpty ? null : _sourceTitle.text.trim(),
+        sourceUrl: _sourceUrl.text.trim().isEmpty
+            ? null
+            : _sourceUrl.text.trim(),
+        sourceTitle: _sourceTitle.text.trim().isEmpty
+            ? null
+            : _sourceTitle.text.trim(),
         tags: names,
       );
       if (!mounted) return;
@@ -138,16 +141,18 @@ class _ItemEditScreenState extends State<ItemEditScreen> {
         typeId: _typeId,
         title: _title.text,
         bodyMd: _body.text,
-        commentMd:
-            _comment.text.trim().isEmpty ? null : _comment.text.trim(),
+        commentMd: _comment.text.trim().isEmpty ? null : _comment.text.trim(),
         clearComment: _comment.text.trim().isEmpty,
         isInbox: _isInbox,
         projectId: _projectId,
         clearProject: _projectId == null,
-        sourceUrl: _sourceUrl.text.trim().isEmpty ? null : _sourceUrl.text.trim(),
+        sourceUrl: _sourceUrl.text.trim().isEmpty
+            ? null
+            : _sourceUrl.text.trim(),
         clearSourceUrl: _sourceUrl.text.trim().isEmpty,
-        sourceTitle:
-            _sourceTitle.text.trim().isEmpty ? null : _sourceTitle.text.trim(),
+        sourceTitle: _sourceTitle.text.trim().isEmpty
+            ? null
+            : _sourceTitle.text.trim(),
         clearSourceTitle: _sourceTitle.text.trim().isEmpty,
         tags: names,
       );
@@ -179,101 +184,106 @@ class _ItemEditScreenState extends State<ItemEditScreen> {
           ),
         ],
       ),
-      body: _preview
-          ? SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: ArabicMarkdownBody(data: _body.text),
-            )
-          : DbStreamBuilder<List<ItemType>>(
-              streamFactory: () => scope.itemTypes.watchBuiltin(),
-              builder: (context, typesSnap) {
-                final types = typesSnap.data ?? const <ItemType>[];
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    DropdownButtonFormField<String>(
-                      initialValue: _typeId,
-                      decoration: InputDecoration(
-                        labelText: l.typeLabel,
-                        prefixIcon: const Icon(Icons.category_outlined),
-                      ),
-                      items: types
-                          .map((t) => DropdownMenuItem<String>(
+      body: ContentWidth(
+        maxWidth: ContentWidths.form,
+        child: _preview
+            ? SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: ArabicMarkdownBody(data: _body.text),
+              )
+            : DbStreamBuilder<List<ItemType>>(
+                streamFactory: () => scope.itemTypes.watchBuiltin(),
+                builder: (context, typesSnap) {
+                  final types = typesSnap.data ?? const <ItemType>[];
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      DropdownButtonFormField<String>(
+                        initialValue: _typeId,
+                        decoration: InputDecoration(
+                          labelText: l.typeLabel,
+                          prefixIcon: const Icon(Icons.category_outlined),
+                        ),
+                        items: types
+                            .map(
+                              (t) => DropdownMenuItem<String>(
                                 value: t.id,
                                 child: Text(t.name),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setState(() => _typeId = v),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _title,
-                      decoration: InputDecoration(
-                        labelText: l.titleLabel,
-                        border: const OutlineInputBorder(),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _typeId = v),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    ProjectDropdown(
-                      value: _projectId,
-                      onChanged: (v) => setState(() => _projectId = v),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _tags,
-                      decoration: InputDecoration(
-                        labelText: l.tagsLabel,
-                        hintText: l.tagsHint,
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _title,
+                        decoration: InputDecoration(
+                          labelText: l.titleLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _body,
-                      maxLines: 10,
-                      keyboardType: TextInputType.multiline,
-                      decoration: InputDecoration(
-                        labelText: l.bodyLabel,
-                        alignLabelWithHint: true,
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 12),
+                      ProjectDropdown(
+                        value: _projectId,
+                        onChanged: (v) => setState(() => _projectId = v),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _comment,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: l.commentLabel,
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _tags,
+                        decoration: InputDecoration(
+                          labelText: l.tagsLabel,
+                          hintText: l.tagsHint,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _sourceTitle,
-                      decoration: InputDecoration(
-                        labelText: l.sourceTitleLabel,
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _body,
+                        maxLines: 10,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          labelText: l.bodyLabel,
+                          alignLabelWithHint: true,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _sourceUrl,
-                      keyboardType: TextInputType.url,
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(
-                        labelText: l.sourceUrlLabel,
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _comment,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: l.commentLabel,
+                          border: const OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    SwitchListTile(
-                      title: Text(l.inboxSwitch),
-                      value: _isInbox,
-                      onChanged: (v) => setState(() => _isInbox = v),
-                    ),
-                  ],
-                );
-              },
-            ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _sourceTitle,
+                        decoration: InputDecoration(
+                          labelText: l.sourceTitleLabel,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _sourceUrl,
+                        keyboardType: TextInputType.url,
+                        textDirection: TextDirection.ltr,
+                        decoration: InputDecoration(
+                          labelText: l.sourceUrlLabel,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      SwitchListTile(
+                        title: Text(l.inboxSwitch),
+                        value: _isInbox,
+                        onChanged: (v) => setState(() => _isInbox = v),
+                      ),
+                    ],
+                  );
+                },
+              ),
+      ),
     );
   }
 

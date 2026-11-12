@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:secondbrain/l10n/app_localizations.dart';
 
 import '../../app/app_scope.dart';
+import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
 import '../common/widgets/common_widgets.dart';
 import '../common/widgets/tag_chip.dart';
@@ -199,7 +200,10 @@ class ItemDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ItemDetailView(itemId: itemId),
+      body: ContentWidth(
+        maxWidth: ContentWidths.details,
+        child: ItemDetailView(itemId: itemId),
+      ),
     );
   }
 }
