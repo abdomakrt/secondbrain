@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:secondbrain/core/ids.dart';
 import 'package:secondbrain/core/hlc.dart';
@@ -56,8 +57,39 @@ void main() {
       await db.close();
       db = AppDatabase.atFile(file);
       final v = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(v.data['user_version'], 1);
+      expect(v.data['user_version'], 2);
       await db.close();
+      await dir.delete(recursive: true);
+    });
+
+    test('the v2 migration adds the source link columns', () async {
+      final dir = await Directory.systemTemp.createTemp('sb_test');
+      final fresh = File('${dir.path}/fresh.db');
+      final legacy = File('${dir.path}/legacy.db');
+
+      // A complete database, then downgraded to the v1 schema.
+      final db = AppDatabase.atFile(fresh);
+      await db.deviceId();
+      await db.close();
+      fresh.copySync(legacy.path);
+
+      final raw = sqlite3.open(legacy.path);
+      raw.execute('ALTER TABLE courses DROP COLUMN source_url');
+      raw.execute('ALTER TABLE projects DROP COLUMN source_url');
+      raw.execute('PRAGMA user_version = 1');
+      raw.close();
+
+      // Opening it with the app runs the upgrade path.
+      final upgraded = AppDatabase.atFile(legacy);
+      final v = await upgraded.customSelect('PRAGMA user_version').getSingle();
+      expect(v.data['user_version'], 2);
+      final courseColumns =
+          await upgraded.customSelect('PRAGMA table_info(courses)').get();
+      expect(courseColumns.map((c) => c.data['name']), contains('source_url'));
+      final projectColumns =
+          await upgraded.customSelect('PRAGMA table_info(projects)').get();
+      expect(projectColumns.map((c) => c.data['name']), contains('source_url'));
+      await upgraded.close();
       await dir.delete(recursive: true);
     });
 

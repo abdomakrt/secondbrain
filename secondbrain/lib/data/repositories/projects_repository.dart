@@ -21,6 +21,7 @@ class ProjectsRepository {
     String description = '',
     String status = 'planned',
     String progressMode = 'auto',
+    String? sourceUrl,
   }) =>
       gate.write((tx) async {
         final id = newId();
@@ -38,6 +39,7 @@ class ProjectsRepository {
           status: status,
           progressMode: progressMode,
           manualProgress: 0,
+          sourceUrl: (sourceUrl == null || sourceUrl.isEmpty) ? null : sourceUrl,
         );
         await tx.db.into(tx.db.projects).insert(project);
         return project;
@@ -53,8 +55,10 @@ class ProjectsRepository {
     int? manualProgress,
     String? lastStop,
     String? nextStep,
+    String? sourceUrl,
     bool clearLastStop = false,
     bool clearNextStep = false,
+    bool clearSourceUrl = false,
   }) =>
       gate.write((tx) async {
         final s = await tx.stamp('projects', current.id);
@@ -71,6 +75,9 @@ class ProjectsRepository {
           nextStep: clearNextStep
               ? const Value(null)
               : (nextStep == null ? const Value.absent() : Value(nextStep)),
+          sourceUrl: clearSourceUrl
+              ? const Value(null)
+              : (sourceUrl == null ? const Value.absent() : Value(sourceUrl)),
           updatedAt: s.updatedAtMs,
           hlc: s.hlc,
         );
@@ -104,12 +111,21 @@ class ProjectsRepository {
           updatedAt: Value(s.updatedAtMs),
           hlc: Value(s.hlc),
         ));
+        await (tx.db.update(tx.db.items)
+              ..where((i) => i.projectId.equals(projectId)))
+            .write(ItemsCompanion(
+          projectId: const Value(null),
+          updatedAt: Value(s.updatedAtMs),
+          hlc: Value(s.hlc),
+        ));
       });
 
   // ---- reads ----
 
+  /// The live project (null once it is in the trash).
   Future<Project?> byId(String id) =>
-      (db.select(db.projects)..where((p) => p.id.equals(id)))
+      (db.select(db.projects)
+            ..where((p) => p.id.equals(id) & p.deletedAt.isNull()))
           .getSingleOrNull();
 
   /// Live list; [status] filters by project state, [includeArchived] keeps

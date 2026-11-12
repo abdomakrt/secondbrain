@@ -10,6 +10,7 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import 'package:secondbrain/data/repositories/attachments_repository.dart';
 import 'package:secondbrain/data/repositories/courses_repository.dart';
 import 'package:secondbrain/data/repositories/item_types_repository.dart';
+import 'package:secondbrain/data/repositories/local_paths_repository.dart';
 import 'package:secondbrain/data/repositories/items_repository.dart';
 import 'package:secondbrain/data/repositories/projects_repository.dart';
 import 'package:secondbrain/data/repositories/settings_repository.dart';
@@ -22,7 +23,7 @@ import 'package:secondbrain/core/hlc.dart';
 class Harness {
   Harness._(this.db, this.gate, this.tags, this.items, this.links,
       this.attachments, this.search, this.projects, this.tasks, this.courses,
-      this.settings, this.itemTypes, this.tmpDir);
+      this.settings, this.itemTypes, this.localPaths, this.tmpDir);
 
   static Future<Harness> create({int Function()? nowMs}) async {
     final tmp = Directory.systemTemp.createTempSync('sb_ui');
@@ -47,8 +48,9 @@ class Harness {
     final courses = CoursesRepository(db: db, gate: gate);
     final settings = SettingsRepository(db: db, gate: gate);
     final itemTypes = ItemTypesRepository(db: db);
+    final localPaths = LocalPathsRepository(db: db, gate: gate);
     return Harness._(db, gate, tags, items, links, attachments, search,
-        projects, tasks, courses, settings, itemTypes, tmp);
+        projects, tasks, courses, settings, itemTypes, localPaths, tmp);
   }
 
   final AppDatabase db;
@@ -63,6 +65,7 @@ class Harness {
   final CoursesRepository courses;
   final SettingsRepository settings;
   final ItemTypesRepository itemTypes;
+  final LocalPathsRepository localPaths;
   final Directory tmpDir;
 
   late String noteTypeId;
@@ -89,6 +92,7 @@ class Harness {
         courses: courses,
         settings: settings,
         itemTypes: itemTypes,
+        localPaths: localPaths,
       );
 
   Widget app() => SecondBrainApp(deps: deps());

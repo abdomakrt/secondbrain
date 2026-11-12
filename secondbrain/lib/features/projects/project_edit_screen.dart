@@ -18,6 +18,7 @@ class ProjectEditScreen extends StatefulWidget {
 
 class _ProjectEditScreenState extends State<ProjectEditScreen> {
   final _name = TextEditingController();
+  final _sourceUrl = TextEditingController();
   final _goal = TextEditingController();
   final _description = TextEditingController();
 
@@ -41,6 +42,7 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
     if (project == null || !mounted) return;
     setState(() {
       _name.text = project.name;
+      _sourceUrl.text = project.sourceUrl ?? '';
       _goal.text = project.goal;
       _description.text = project.description;
       _status = project.status;
@@ -53,6 +55,7 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
     _name.dispose();
     _goal.dispose();
     _description.dispose();
+    _sourceUrl.dispose();
     super.dispose();
   }
 
@@ -72,6 +75,7 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
         goal: _goal.text.trim(),
         description: _description.text.trim(),
         status: _status,
+        sourceUrl: _sourceUrl.text.trim(),
       );
     } else {
       final project = await scope.projects.byId(widget.projectId!);
@@ -82,6 +86,8 @@ class _ProjectEditScreenState extends State<ProjectEditScreen> {
           goal: _goal.text.trim(),
           description: _description.text.trim(),
           status: _status,
+          sourceUrl: _sourceUrl.text.trim(),
+          clearSourceUrl: _sourceUrl.text.trim().isEmpty,
         );
       }
     }

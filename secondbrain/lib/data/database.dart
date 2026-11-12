@@ -45,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(NativeDatabase.createInBackground(file, logStatements: false));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   static const _createItemsFts =
       "CREATE VIRTUAL TABLE IF NOT EXISTS items_fts USING fts5("
@@ -71,6 +71,13 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
           for (final stmt in _extraStatements) {
             await customStatement(stmt);
+          }
+        },
+        onUpgrade: (m, from, to) async {
+          // v2: the source link of a project/course (spec §12 + UI-11).
+          if (from < 2) {
+            await customStatement('ALTER TABLE courses ADD COLUMN source_url TEXT');
+            await customStatement('ALTER TABLE projects ADD COLUMN source_url TEXT');
           }
         },
         beforeOpen: (details) async {

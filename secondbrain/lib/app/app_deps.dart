@@ -8,6 +8,7 @@ import '../data/repositories/attachments_repository.dart';
 import '../data/repositories/courses_repository.dart';
 import '../data/repositories/item_types_repository.dart';
 import '../data/repositories/items_repository.dart';
+import '../data/repositories/local_paths_repository.dart';
 import '../data/repositories/projects_repository.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/tasks_repository.dart';
@@ -15,6 +16,8 @@ import '../data/search_service.dart';
 import '../data/write_gate.dart';
 import '../platform/desktop/capture_service.dart';
 import '../platform/desktop/x11_capture.dart';
+import '../platform/desktop/xdg_system_opener.dart';
+import '../platform/system_opener.dart';
 import '../sync/connection.dart';
 
 /// Requested swap of the live [AppDeps] after a successful restore.
@@ -40,8 +43,10 @@ class AppDeps {
     required this.courses,
     required this.settings,
     required this.itemTypes,
+    required this.localPaths,
     this.connection,
     this.capture,
+    this.opener,
   });
 
   /// The directory holding the db file, blobs, backups and safety copies.
@@ -59,12 +64,18 @@ class AppDeps {
   final SettingsRepository settings;
   final ItemTypesRepository itemTypes;
 
+  /// Folders linked to projects/courses (local only, spec §12).
+  final LocalPathsRepository localPaths;
+
   /// Pairing / transport layer. Local-only until the sync server exists.
   final ConnectionService? connection;
 
   /// Desktop quick-capture service (hot key + selection/clipboard reading).
   /// Null on platforms without a desktop capture backend.
   final DesktopCaptureService? capture;
+
+  /// Opens folders and links with the system handler (desktop only).
+  final SystemOpener? opener;
 
   /// Opens (or re-opens) the app's local state at [supportDir].
   static Future<AppDeps> open(Directory supportDir) async {
@@ -84,6 +95,7 @@ class AppDeps {
     final courses = CoursesRepository(db: db, gate: gate);
     final settings = SettingsRepository(db: db, gate: gate);
     final itemTypes = ItemTypesRepository(db: db);
+    final localPaths = LocalPathsRepository(db: db, gate: gate);
 
     // Desktop quick capture (Linux/X11): a global hot key that reads the
     // selection / clipboard. Started with the shortcut saved in the settings.
@@ -106,8 +118,10 @@ class AppDeps {
       courses: courses,
       settings: settings,
       itemTypes: itemTypes,
+      localPaths: localPaths,
       connection: LocalOnlyConnectionService(),
       capture: capture,
+      opener: Platform.isLinux ? const XdgSystemOpener() : null,
     );
 
     if (capture != null) {

@@ -10,6 +10,7 @@ import '../common/widgets/db_stream_builder.dart';
 import '../common/widgets/project_card.dart';
 import '../shell/app_shell.dart';
 import 'project_detail_screen.dart';
+import 'project_edit_screen.dart';
 
 /// Projects screen (UI_SPEC §5, UI-05).
 ///
@@ -121,6 +122,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                               ProjectDetailScreen(projectId: project.id),
                         ),
                         onToggleStatus: () => _cycleStatus(context, project),
+                        onEdit: () => _edit(context, project),
+                        onDelete: () => _delete(context, project),
                       );
                     },
                   );
@@ -141,8 +144,33 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return latest;
   }
 
-  Future<void> _cycleStatus(BuildContext context, Project project) async {
+  /// Opens the edit form of a project.
+  Future<void> _edit(BuildContext context, Project project) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProjectEditScreen(projectId: project.id),
+      ),
+    );
+  }
+
+  /// Moves a project to the trash (soft delete — the children survive).
+  Future<void> _delete(BuildContext context, Project project) async {
     final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final confirmed = await confirmDialog(
+      context,
+      title: l.deleteProject,
+      message: l.deleteProjectConfirm,
+      confirmLabel: l.deleteProject,
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await scope.projects.trash(project.id);
+    if (!context.mounted) return;
+    showToast(context, l.movedToTrash);
+  }
+
+  Future<void> _cycleStatus(BuildContext context, Project project) async {    final l = AppLocalizations.of(context)!;
     final scope = AppScope.of(context);
     const order = ['planned', 'active', 'paused', 'completed', 'archived'];
     final next = order[(order.indexOf(project.status) + 1) % order.length];

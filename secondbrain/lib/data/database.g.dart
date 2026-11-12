@@ -156,6 +156,17 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -172,6 +183,7 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     manualProgress,
     lastStop,
     nextStep,
+    sourceUrl,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -285,6 +297,12 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         nextStep.isAcceptableOrUnknown(data['next_step']!, _nextStepMeta),
       );
     }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
     return context;
   }
 
@@ -350,6 +368,10 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.string,
         data['${effectivePrefix}next_step'],
       ),
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
     );
   }
 
@@ -374,6 +396,7 @@ class Project extends DataClass implements Insertable<Project> {
   final int manualProgress;
   final String? lastStop;
   final String? nextStep;
+  final String? sourceUrl;
   const Project({
     required this.id,
     required this.userId,
@@ -389,6 +412,7 @@ class Project extends DataClass implements Insertable<Project> {
     required this.manualProgress,
     this.lastStop,
     this.nextStep,
+    this.sourceUrl,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -412,6 +436,9 @@ class Project extends DataClass implements Insertable<Project> {
     }
     if (!nullToAbsent || nextStep != null) {
       map['next_step'] = Variable<String>(nextStep);
+    }
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
     }
     return map;
   }
@@ -438,6 +465,9 @@ class Project extends DataClass implements Insertable<Project> {
       nextStep: nextStep == null && nullToAbsent
           ? const Value.absent()
           : Value(nextStep),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
     );
   }
 
@@ -461,6 +491,7 @@ class Project extends DataClass implements Insertable<Project> {
       manualProgress: serializer.fromJson<int>(json['manualProgress']),
       lastStop: serializer.fromJson<String?>(json['lastStop']),
       nextStep: serializer.fromJson<String?>(json['nextStep']),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
     );
   }
   @override
@@ -481,6 +512,7 @@ class Project extends DataClass implements Insertable<Project> {
       'manualProgress': serializer.toJson<int>(manualProgress),
       'lastStop': serializer.toJson<String?>(lastStop),
       'nextStep': serializer.toJson<String?>(nextStep),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
     };
   }
 
@@ -499,6 +531,7 @@ class Project extends DataClass implements Insertable<Project> {
     int? manualProgress,
     Value<String?> lastStop = const Value.absent(),
     Value<String?> nextStep = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
   }) => Project(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -514,6 +547,7 @@ class Project extends DataClass implements Insertable<Project> {
     manualProgress: manualProgress ?? this.manualProgress,
     lastStop: lastStop.present ? lastStop.value : this.lastStop,
     nextStep: nextStep.present ? nextStep.value : this.nextStep,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
   );
   Project copyWithCompanion(ProjectsCompanion data) {
     return Project(
@@ -537,6 +571,7 @@ class Project extends DataClass implements Insertable<Project> {
           : this.manualProgress,
       lastStop: data.lastStop.present ? data.lastStop.value : this.lastStop,
       nextStep: data.nextStep.present ? data.nextStep.value : this.nextStep,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
     );
   }
 
@@ -556,7 +591,8 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('progressMode: $progressMode, ')
           ..write('manualProgress: $manualProgress, ')
           ..write('lastStop: $lastStop, ')
-          ..write('nextStep: $nextStep')
+          ..write('nextStep: $nextStep, ')
+          ..write('sourceUrl: $sourceUrl')
           ..write(')'))
         .toString();
   }
@@ -577,6 +613,7 @@ class Project extends DataClass implements Insertable<Project> {
     manualProgress,
     lastStop,
     nextStep,
+    sourceUrl,
   );
   @override
   bool operator ==(Object other) =>
@@ -595,7 +632,8 @@ class Project extends DataClass implements Insertable<Project> {
           other.progressMode == this.progressMode &&
           other.manualProgress == this.manualProgress &&
           other.lastStop == this.lastStop &&
-          other.nextStep == this.nextStep);
+          other.nextStep == this.nextStep &&
+          other.sourceUrl == this.sourceUrl);
 }
 
 class ProjectsCompanion extends UpdateCompanion<Project> {
@@ -613,6 +651,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<int> manualProgress;
   final Value<String?> lastStop;
   final Value<String?> nextStep;
+  final Value<String?> sourceUrl;
   final Value<int> rowid;
   const ProjectsCompanion({
     this.id = const Value.absent(),
@@ -629,6 +668,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.manualProgress = const Value.absent(),
     this.lastStop = const Value.absent(),
     this.nextStep = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ProjectsCompanion.insert({
@@ -646,6 +686,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.manualProgress = const Value.absent(),
     this.lastStop = const Value.absent(),
     this.nextStep = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -667,6 +708,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<int>? manualProgress,
     Expression<String>? lastStop,
     Expression<String>? nextStep,
+    Expression<String>? sourceUrl,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -684,6 +726,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (manualProgress != null) 'manual_progress': manualProgress,
       if (lastStop != null) 'last_stop': lastStop,
       if (nextStep != null) 'next_step': nextStep,
+      if (sourceUrl != null) 'source_url': sourceUrl,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -703,6 +746,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<int>? manualProgress,
     Value<String?>? lastStop,
     Value<String?>? nextStep,
+    Value<String?>? sourceUrl,
     Value<int>? rowid,
   }) {
     return ProjectsCompanion(
@@ -720,6 +764,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       manualProgress: manualProgress ?? this.manualProgress,
       lastStop: lastStop ?? this.lastStop,
       nextStep: nextStep ?? this.nextStep,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -769,6 +814,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (nextStep.present) {
       map['next_step'] = Variable<String>(nextStep.value);
     }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -792,6 +840,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('manualProgress: $manualProgress, ')
           ..write('lastStop: $lastStop, ')
           ..write('nextStep: $nextStep, ')
+          ..write('sourceUrl: $sourceUrl, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2799,6 +2848,17 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2813,6 +2873,7 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     projectId,
     currentLessonId,
     lastStop,
+    sourceUrl,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2911,6 +2972,12 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
         lastStop.isAcceptableOrUnknown(data['last_stop']!, _lastStopMeta),
       );
     }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
     return context;
   }
 
@@ -2968,6 +3035,10 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
         DriftSqlType.string,
         data['${effectivePrefix}last_stop'],
       ),
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
     );
   }
 
@@ -2990,6 +3061,7 @@ class Course extends DataClass implements Insertable<Course> {
   final String? projectId;
   final String? currentLessonId;
   final String? lastStop;
+  final String? sourceUrl;
   const Course({
     required this.id,
     required this.userId,
@@ -3003,6 +3075,7 @@ class Course extends DataClass implements Insertable<Course> {
     this.projectId,
     this.currentLessonId,
     this.lastStop,
+    this.sourceUrl,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3026,6 +3099,9 @@ class Course extends DataClass implements Insertable<Course> {
     }
     if (!nullToAbsent || lastStop != null) {
       map['last_stop'] = Variable<String>(lastStop);
+    }
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
     }
     return map;
   }
@@ -3052,6 +3128,9 @@ class Course extends DataClass implements Insertable<Course> {
       lastStop: lastStop == null && nullToAbsent
           ? const Value.absent()
           : Value(lastStop),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
     );
   }
 
@@ -3073,6 +3152,7 @@ class Course extends DataClass implements Insertable<Course> {
       projectId: serializer.fromJson<String?>(json['projectId']),
       currentLessonId: serializer.fromJson<String?>(json['currentLessonId']),
       lastStop: serializer.fromJson<String?>(json['lastStop']),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
     );
   }
   @override
@@ -3091,6 +3171,7 @@ class Course extends DataClass implements Insertable<Course> {
       'projectId': serializer.toJson<String?>(projectId),
       'currentLessonId': serializer.toJson<String?>(currentLessonId),
       'lastStop': serializer.toJson<String?>(lastStop),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
     };
   }
 
@@ -3107,6 +3188,7 @@ class Course extends DataClass implements Insertable<Course> {
     Value<String?> projectId = const Value.absent(),
     Value<String?> currentLessonId = const Value.absent(),
     Value<String?> lastStop = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
   }) => Course(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -3122,6 +3204,7 @@ class Course extends DataClass implements Insertable<Course> {
         ? currentLessonId.value
         : this.currentLessonId,
     lastStop: lastStop.present ? lastStop.value : this.lastStop,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
   );
   Course copyWithCompanion(CoursesCompanion data) {
     return Course(
@@ -3141,6 +3224,7 @@ class Course extends DataClass implements Insertable<Course> {
           ? data.currentLessonId.value
           : this.currentLessonId,
       lastStop: data.lastStop.present ? data.lastStop.value : this.lastStop,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
     );
   }
 
@@ -3158,7 +3242,8 @@ class Course extends DataClass implements Insertable<Course> {
           ..write('status: $status, ')
           ..write('projectId: $projectId, ')
           ..write('currentLessonId: $currentLessonId, ')
-          ..write('lastStop: $lastStop')
+          ..write('lastStop: $lastStop, ')
+          ..write('sourceUrl: $sourceUrl')
           ..write(')'))
         .toString();
   }
@@ -3177,6 +3262,7 @@ class Course extends DataClass implements Insertable<Course> {
     projectId,
     currentLessonId,
     lastStop,
+    sourceUrl,
   );
   @override
   bool operator ==(Object other) =>
@@ -3193,7 +3279,8 @@ class Course extends DataClass implements Insertable<Course> {
           other.status == this.status &&
           other.projectId == this.projectId &&
           other.currentLessonId == this.currentLessonId &&
-          other.lastStop == this.lastStop);
+          other.lastStop == this.lastStop &&
+          other.sourceUrl == this.sourceUrl);
 }
 
 class CoursesCompanion extends UpdateCompanion<Course> {
@@ -3209,6 +3296,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
   final Value<String?> projectId;
   final Value<String?> currentLessonId;
   final Value<String?> lastStop;
+  final Value<String?> sourceUrl;
   final Value<int> rowid;
   const CoursesCompanion({
     this.id = const Value.absent(),
@@ -3223,6 +3311,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     this.projectId = const Value.absent(),
     this.currentLessonId = const Value.absent(),
     this.lastStop = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CoursesCompanion.insert({
@@ -3238,6 +3327,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     this.projectId = const Value.absent(),
     this.currentLessonId = const Value.absent(),
     this.lastStop = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -3257,6 +3347,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     Expression<String>? projectId,
     Expression<String>? currentLessonId,
     Expression<String>? lastStop,
+    Expression<String>? sourceUrl,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3272,6 +3363,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       if (projectId != null) 'project_id': projectId,
       if (currentLessonId != null) 'current_lesson_id': currentLessonId,
       if (lastStop != null) 'last_stop': lastStop,
+      if (sourceUrl != null) 'source_url': sourceUrl,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3289,6 +3381,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     Value<String?>? projectId,
     Value<String?>? currentLessonId,
     Value<String?>? lastStop,
+    Value<String?>? sourceUrl,
     Value<int>? rowid,
   }) {
     return CoursesCompanion(
@@ -3304,6 +3397,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       projectId: projectId ?? this.projectId,
       currentLessonId: currentLessonId ?? this.currentLessonId,
       lastStop: lastStop ?? this.lastStop,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3347,6 +3441,9 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     if (lastStop.present) {
       map['last_stop'] = Variable<String>(lastStop.value);
     }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3368,6 +3465,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
           ..write('projectId: $projectId, ')
           ..write('currentLessonId: $currentLessonId, ')
           ..write('lastStop: $lastStop, ')
+          ..write('sourceUrl: $sourceUrl, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -12187,6 +12285,7 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<int> manualProgress,
   Value<String?> lastStop,
   Value<String?> nextStep,
+  Value<String?> sourceUrl,
   Value<int> rowid,
 });
 typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
@@ -12204,6 +12303,7 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<int> manualProgress,
   Value<String?> lastStop,
   Value<String?> nextStep,
+  Value<String?> sourceUrl,
   Value<int> rowid,
 });
 
@@ -12283,6 +12383,11 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<String> get nextStep => $composableBuilder(
     column: $table.nextStep,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -12365,6 +12470,11 @@ class $$ProjectsTableOrderingComposer
     column: $table.nextStep,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ProjectsTableAnnotationComposer
@@ -12423,6 +12533,9 @@ class $$ProjectsTableAnnotationComposer
 
   GeneratedColumn<String> get nextStep =>
       $composableBuilder(column: $table.nextStep, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
 }
 
 class $$ProjectsTableTableManager
@@ -12467,6 +12580,7 @@ class $$ProjectsTableTableManager
                 Value<int> manualProgress = const Value.absent(),
                 Value<String?> lastStop = const Value.absent(),
                 Value<String?> nextStep = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ProjectsCompanion(
                 id: id,
@@ -12483,6 +12597,7 @@ class $$ProjectsTableTableManager
                 manualProgress: manualProgress,
                 lastStop: lastStop,
                 nextStep: nextStep,
+                sourceUrl: sourceUrl,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12501,6 +12616,7 @@ class $$ProjectsTableTableManager
                 Value<int> manualProgress = const Value.absent(),
                 Value<String?> lastStop = const Value.absent(),
                 Value<String?> nextStep = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ProjectsCompanion.insert(
                 id: id,
@@ -12517,6 +12633,7 @@ class $$ProjectsTableTableManager
                 manualProgress: manualProgress,
                 lastStop: lastStop,
                 nextStep: nextStep,
+                sourceUrl: sourceUrl,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -13422,6 +13539,7 @@ typedef $$CoursesTableCreateCompanionBuilder = CoursesCompanion Function({
   Value<String?> projectId,
   Value<String?> currentLessonId,
   Value<String?> lastStop,
+  Value<String?> sourceUrl,
   Value<int> rowid,
 });
 typedef $$CoursesTableUpdateCompanionBuilder = CoursesCompanion Function({
@@ -13437,6 +13555,7 @@ typedef $$CoursesTableUpdateCompanionBuilder = CoursesCompanion Function({
   Value<String?> projectId,
   Value<String?> currentLessonId,
   Value<String?> lastStop,
+  Value<String?> sourceUrl,
   Value<int> rowid,
 });
 
@@ -13506,6 +13625,11 @@ class $$CoursesTableFilterComposer
 
   ColumnFilters<String> get lastStop => $composableBuilder(
     column: $table.lastStop,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13578,6 +13702,11 @@ class $$CoursesTableOrderingComposer
     column: $table.lastStop,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CoursesTableAnnotationComposer
@@ -13628,6 +13757,9 @@ class $$CoursesTableAnnotationComposer
 
   GeneratedColumn<String> get lastStop =>
       $composableBuilder(column: $table.lastStop, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
 }
 
 class $$CoursesTableTableManager
@@ -13670,6 +13802,7 @@ class $$CoursesTableTableManager
                 Value<String?> projectId = const Value.absent(),
                 Value<String?> currentLessonId = const Value.absent(),
                 Value<String?> lastStop = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CoursesCompanion(
                 id: id,
@@ -13684,6 +13817,7 @@ class $$CoursesTableTableManager
                 projectId: projectId,
                 currentLessonId: currentLessonId,
                 lastStop: lastStop,
+                sourceUrl: sourceUrl,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -13700,6 +13834,7 @@ class $$CoursesTableTableManager
                 Value<String?> projectId = const Value.absent(),
                 Value<String?> currentLessonId = const Value.absent(),
                 Value<String?> lastStop = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CoursesCompanion.insert(
                 id: id,
@@ -13714,6 +13849,7 @@ class $$CoursesTableTableManager
                 projectId: projectId,
                 currentLessonId: currentLessonId,
                 lastStop: lastStop,
+                sourceUrl: sourceUrl,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -5,14 +5,19 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import '../../app/app_scope.dart';
 import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
+import '../../data/repositories/local_paths_repository.dart';
 import '../../domain/progress.dart';
 import '../common/labels.dart';
+import '../common/dialogs.dart';
 import '../common/widgets/common_widgets.dart';
 import '../common/widgets/db_stream_builder.dart';
+import '../common/widgets/linked_folders.dart';
 import '../common/widgets/progress_bar.dart';
+import '../common/widgets/source_link_tile.dart';
 import '../knowledge/item_detail_screen.dart';
 import '../knowledge/widgets/type_icons.dart';
 import '../shell/app_shell.dart';
+import 'course_edit_screen.dart';
 import 'lesson_detail_screen.dart';
 
 /// Course details (UI_SPEC §5, UI-12).
@@ -45,7 +50,8 @@ class _CourseDetailViewState extends State<CourseDetailView>
 
     return StreamBuilder<Course?>(
       stream: (scope.db.select(scope.db.courses)
-            ..where((c) => c.id.equals(widget.courseId)))
+            ..where((c) =>
+                c.id.equals(widget.courseId) & c.deletedAt.isNull()))
           .watchSingleOrNull(),
       builder: (context, snap) {
         final course = snap.data;
@@ -55,8 +61,7 @@ class _CourseDetailViewState extends State<CourseDetailView>
         return Column(
           children: [
             _Header(course: course),
-            TabBar(
-              controller: _tabs,
+            TabBar(              controller: _tabs,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
               tabs: [
@@ -162,6 +167,33 @@ class _Header extends StatelessWidget {
                     icon: const Icon(Icons.flag_outlined),
                     label: Text(l.lastStop),
                   ),
+                  OutlinedButton.icon(
+                    onPressed: () => _addLesson(context, course),
+                    icon: const Icon(Icons.playlist_add),
+                    label: Text(l.addLesson),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => _addUnit(context, course),
+                    icon: const Icon(Icons.library_add_outlined),
+                    label: Text(l.addUnit),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: l.options,
+                    onSelected: (value) {
+                      if (value == 'edit') _editCourse(context, course);
+                      if (value == 'delete') _deleteCourse(context, course);
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Text(l.editCourse),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text(l.deleteCourse),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -171,33 +203,72 @@ class _Header extends StatelessWidget {
     );
   }
 
+  /// Adds a lesson to the course (the title is asked in a dialog).
+  Future<void> _addLesson(BuildContext context, Course course) async {
+    final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final title = await _askTitle(context, l.addLesson, l.lessonTitle);
+    if (title == null || title.isEmpty) return;
+    await scope.courses.addLesson(courseId: course.id, title: title);
+  }
+
+  /// Adds a unit (a group of lessons) to the course.
+  Future<void> _addUnit(BuildContext context, Course course) async {
+    final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final title = await _askTitle(context, l.addUnit, l.unitTitle);
+    if (title == null || title.isEmpty) return;
+    await scope.courses.addUnit(courseId: course.id, title: title);
+  }
+
+  /// Asks for a one-line title.
+  Future<String?> _askTitle(
+    BuildContext context,
+    String title,
+    String label,
+  ) {
+    return showTextPrompt(context, title: title, label: label);
+  }
+
+  Future<void> _editCourse(BuildContext context, Course course) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CourseEditScreen(courseId: course.id),
+      ),
+    );
+  }
+
+  /// Moves the course to the trash (soft delete — the lessons survive).
+  Future<void> _deleteCourse(BuildContext context, Course course) async {
+    final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final confirmed = await confirmDialog(
+      context,
+      title: l.deleteCourse,
+      message: l.deleteCourseConfirm,
+      confirmLabel: l.deleteCourse,
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await scope.courses.trash(course.id);
+    if (!context.mounted) return;
+    showToast(context, l.movedToTrash);
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+  }
+
   Future<void> _editStop(BuildContext context, Course course) async {
     final l = AppLocalizations.of(context)!;
     final scope = AppScope.of(context);
-    final controller = TextEditingController(text: course.lastStop ?? '');
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.lastStop),
-        content: TextField(controller: controller, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l.save),
-          ),
-        ],
-      ),
+    final value = await showTextPrompt(
+      context,
+      title: l.lastStop,
+      initialValue: course.lastStop ?? '',
     );
-    controller.dispose();
-    if (saved != true) return;
+    if (value == null) return;
     await scope.courses.update(
       course,
-      lastStop: controller.text.trim(),
-      clearLastStop: controller.text.trim().isEmpty,
+      lastStop: value,
+      clearLastStop: value.isEmpty,
     );
   }
 }
@@ -363,16 +434,25 @@ class _OverviewTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(l.courseSource, style: Theme.of(context).textTheme.titleSmall),
+        Text(l.courseSource, style: theme.textTheme.titleSmall),
+        const SizedBox(height: 4),
+        SourceLinkTile(url: course.sourceUrl),
+        const SizedBox(height: 16),
+        Text(l.lastStop, style: theme.textTheme.titleSmall),
         const SizedBox(height: 4),
         Text((course.lastStop ?? '').isEmpty ? '—' : course.lastStop!),
         const SizedBox(height: 16),
-        Text(
-          l.lastStop,
-          style: Theme.of(context).textTheme.titleSmall,
+        Text(l.descriptionLabel, style: theme.textTheme.titleSmall),
+        const SizedBox(height: 4),
+        Text(course.description.isEmpty ? '—' : course.description),
+        const SizedBox(height: 20),
+        LinkedFoldersSection(
+          ownerType: LocalPathsRepository.ownerCourse,
+          ownerId: course.id,
         ),
       ],
     );

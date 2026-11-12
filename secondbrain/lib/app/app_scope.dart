@@ -5,12 +5,14 @@ import '../data/repositories/attachments_repository.dart';
 import '../data/repositories/courses_repository.dart';
 import '../data/repositories/item_types_repository.dart';
 import '../data/repositories/items_repository.dart';
+import '../data/repositories/local_paths_repository.dart';
 import '../data/repositories/projects_repository.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/tasks_repository.dart';
 import '../data/search_service.dart';
 import '../data/write_gate.dart';
 import '../platform/desktop/capture_service.dart';
+import '../platform/system_opener.dart';
 import '../sync/connection.dart';
 import 'app_deps.dart';
 
@@ -36,6 +38,10 @@ class AppScope extends InheritedWidget {
   CoursesRepository get courses => deps.courses;
   SettingsRepository get settings => deps.settings;
   ItemTypesRepository get itemTypes => deps.itemTypes;
+  LocalPathsRepository get localPaths => deps.localPaths;
+
+  /// Opens folders and links with the system handler (desktop only).
+  SystemOpener get opener => deps.opener ?? const UnsupportedSystemOpener();
 
   /// Pairing / transport layer (local-only until the sync server exists).
   ConnectionService get connection =>

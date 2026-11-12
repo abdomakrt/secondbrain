@@ -135,6 +135,16 @@
 - [x] **إصلاح سلوكي**: عنصر «الكل» في قوائم التصفية كان لا يمسح الفلتر (`PopupMenuButton` يُهمل القيمة `null`) — صار له قيمة مُميّزة.
 - [x] 10 اختبارات جديدة: `test/data/item_types_repository_test.dart`, `test/features/dialogs_test.dart`, `test/features/filter_chip_menu_test.dart`.
 
+## Phase 11 — إكمال الكورسات والحذف وربط المجلدات (2026-11-12)
+> الحالة: **مكتملة** — `flutter analyze` نظيف، `flutter test` 138/138 ناجحة، بناء Linux debug/release ناجح.
+- [x] **حذف المشروع/الكورس** (soft delete): زر «حذف» في قائمة خيارات البطاقة وفي قائمة «⋮» داخل الشاشة + تأكيد. الأبناء (المهام/المعرفة) **تُفصل** ولا تُحذف (spec §5.1). `byId` صار يُرجع `null` للعنصر المحذوف.
+- [x] **إضافة درس/وحدة** من شاشة الكورس (حوار عنوان) + **تعديل الكورس/المشروع** من نفس المكان.
+- [x] **رابط المصدر** للمشروع والكورس: عمود `source_url` (ترحيل schema v2) + حقل في نموذج التعديل + عرض قابل للفتح في «نظرة عامة» + في بطاقة الكورس.
+- [x] **ربط مجلدات القرص** (spec §12): `LocalPathsRepository` + `LinkedFoldersSection` (إضافة مجلد، فتح، نسخ المسار، إزالة، شارة «المجلد غير موجود») — سطح المكتب فقط عبر `SystemOpener`/`xdg-open`.
+- [x] إصلاح خطأ في تبويب «نظرة عامة» للكورس: كان يعرض `lastStop` تحت عنوان «المصدر».
+- [x] **إصلاح أخطاء حقيقية**: `TextEditingController` يُستدعى بعد `dispose` (3 حوارات) → حوار مشترك `TextPromptDialog` يملك الـ controller؛ `GlobalSearch` كان يحتفظ بـ controller قديم؛ `EmptyState` كان يفيض عند ارتفاع صغير.
+- [x] 12 اختبارًا جديدًا: `test/data/projects_courses_delete_test.dart`، `test/features/courses_actions_test.dart`، ترقية المخطط في `test/data/write_gate_test.dart`.
+
 ## خارج v1 (لا تُنفَّذ الآن)
 - **استيراد Google Keep (Phase 3 كاملة — مؤجَّلة إلى v2 بقرار المستخدم).**
 - WorkManager background sync, HTML→Markdown, recurring tasks, cloud sync, password vault, multi-user, browser extension, تحويل وسم إلى مشروع/كورس، تحويل أسطر إلى مهام، Google Calendar، تشفير النسخ الاحتياطي، مزامنة عبر الإنترنت، تصدير من الهاتف، مراقبة تلقائية للنشاط، شاشة/ضغطات المفاتيح.

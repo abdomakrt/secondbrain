@@ -18,6 +18,7 @@ class CourseEditScreen extends StatefulWidget {
 class _CourseEditScreenState extends State<CourseEditScreen> {
   final _title = TextEditingController();
   final _description = TextEditingController();
+  final _sourceUrl = TextEditingController();
 
   bool _loaded = false;
   bool _saving = false;
@@ -39,6 +40,7 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
     setState(() {
       _title.text = course.title;
       _description.text = course.description;
+      _sourceUrl.text = course.sourceUrl ?? '';
       _loaded = true;
     });
   }
@@ -47,6 +49,7 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
   void dispose() {
     _title.dispose();
     _description.dispose();
+    _sourceUrl.dispose();
     super.dispose();
   }
 
@@ -64,6 +67,7 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
       await scope.courses.create(
         title: title,
         description: _description.text.trim(),
+        sourceUrl: _sourceUrl.text.trim(),
       );
     } else {
       final course = await scope.courses.byId(widget.courseId!);
@@ -72,6 +76,8 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
           course,
           title: title,
           description: _description.text.trim(),
+          sourceUrl: _sourceUrl.text.trim(),
+          clearSourceUrl: _sourceUrl.text.trim().isEmpty,
         );
       }
     }
@@ -115,6 +121,18 @@ class _CourseEditScreenState extends State<CourseEditScreen> {
               decoration: InputDecoration(
                 labelText: l.descriptionLabel,
                 alignLabelWithHint: true,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _sourceUrl,
+              keyboardType: TextInputType.url,
+              textDirection: TextDirection.ltr,
+              decoration: InputDecoration(
+                labelText: l.sourceUrl,
+                hintText: l.sourceUrlHint,
+                prefixIcon: const Icon(Icons.link),
                 border: const OutlineInputBorder(),
               ),
             ),

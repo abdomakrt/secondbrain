@@ -1141,4 +1141,100 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get syncNotEnabledYet =>
       'المزامنة بين الأجهزة غير مفعّلة في هذه النسخة — البيانات محلية على هذا الجهاز.';
+
+  @override
+  String get addLesson => 'إضافة درس';
+
+  @override
+  String get addUnit => 'إضافة وحدة';
+
+  @override
+  String get lessonTitle => 'عنوان الدرس';
+
+  @override
+  String get unitTitle => 'عنوان الوحدة';
+
+  @override
+  String get addLessonToCourse => 'إضافة درس إلى الكورس';
+
+  @override
+  String get addUnitToCourse => 'إضافة وحدة إلى الكورس';
+
+  @override
+  String get deleteCourse => 'حذف الكورس';
+
+  @override
+  String get deleteProject => 'حذف المشروع';
+
+  @override
+  String get deleteCourseConfirm =>
+      'سيُنقل الكورس إلى السلة. تبقى الدروس والمعرفة محفوظة.';
+
+  @override
+  String get deleteProjectConfirm =>
+      'سيُنقل المشروع إلى السلة. تبقى المهام والمعرفة محفوظة.';
+
+  @override
+  String get movedToTrash => 'نُقل إلى السلة';
+
+  @override
+  String get editCourse => 'تعديل الكورس';
+
+  @override
+  String get editProject => 'تعديل المشروع';
+
+  @override
+  String get sourceUrl => 'رابط المصدر';
+
+  @override
+  String get sourceUrlHint => 'https://…';
+
+  @override
+  String get noSourceUrl => 'لا يوجد رابط';
+
+  @override
+  String get openLink => 'فتح الرابط';
+
+  @override
+  String get linkOpenFailed => 'تعذّر فتح الرابط';
+
+  @override
+  String get linkedFolders => 'المجلدات المرتبطة';
+
+  @override
+  String get addFolder => 'إضافة مجلد';
+
+  @override
+  String get noFolders => 'لا توجد مجلدات مرتبطة';
+
+  @override
+  String get folderMissing => 'المجلد غير موجود';
+
+  @override
+  String get openFolder => 'فتح المجلد';
+
+  @override
+  String get folderOpenFailed => 'تعذّر فتح المجلد';
+
+  @override
+  String get copyPath => 'نسخ المسار';
+
+  @override
+  String get pathCopied => 'نُسخ المسار';
+
+  @override
+  String get removeFolder => 'إزالة المجلد';
+
+  @override
+  String get removeFolderConfirm =>
+      'سيُزال ربط المجلد فقط — الملفات تبقى على القرص.';
+
+  @override
+  String get desktopOnly => 'على الكمبيوتر فقط';
+
+  @override
+  String get folderLabel => 'اسم المجلد (اختياري)';
+
+  @override
+  String get options => 'خيارات';
 }

@@ -42,9 +42,13 @@ Personal productivity/knowledge app: Flutter + Dart, single codebase, Android + 
 - `lib/features/common/widgets/filter_chip_menu.dart` — `FilterChipMenu` + `FilterOption` (every filter chip).
 - `lib/features/common/widgets/knowledge_filter_bar.dart` — `KnowledgeFilterBar` (type/project/tag chips for knowledge + search).
 - `lib/features/common/widgets/meta_label.dart` — `MetaLabel` (icon + small text).
-- `lib/features/common/dialogs.dart` — `showOptionSheet`, `askForTags`, `splitTagNames`.
+- `lib/features/common/widgets/content_width.dart` — `ContentWidth` + `ContentWidths` (max width of every screen; forms 720, lists 1000).
+- `lib/features/common/widgets/linked_folders.dart` — `LinkedFoldersSection` (folders on disk, desktop only, spec §12).
+- `lib/features/common/widgets/source_link_tile.dart` — `SourceLinkTile` (the source link of a project/course).
+- `lib/features/common/dialogs.dart` — `showOptionSheet`, `showTextPrompt`, `askForTags`, `splitTagNames`.
 - `lib/features/common/labels.dart` — status labels + `itemDisplayTitle`.
 - Read content types through `ItemTypesRepository` (`scope.itemTypes`), never with an inline query.
+- A dialog that shows a text field must own its `TextEditingController` (see `TextPromptDialog`) — disposing it right after `showDialog` returns crashes the app while the dialog animates out.
 
 ## Commands
 Flutter 3.47.9 + Dart 3.13.7 installed at `/media/storage/tools/flutter/bin` (already in `~/.bashrc`). App code lives in `secondbrain/`; docs stay at the repo root.

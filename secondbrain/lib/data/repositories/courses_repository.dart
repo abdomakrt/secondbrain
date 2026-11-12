@@ -21,6 +21,7 @@ class CoursesRepository {
     String description = '',
     String status = 'planned',
     String? projectId,
+    String? sourceUrl,
   }) =>
       gate.write((tx) async {
         final id = newId();
@@ -36,6 +37,7 @@ class CoursesRepository {
           description: description,
           status: status,
           projectId: projectId,
+          sourceUrl: (sourceUrl == null || sourceUrl.isEmpty) ? null : sourceUrl,
         );
         await tx.db.into(tx.db.courses).insert(course);
         return course;
@@ -49,8 +51,10 @@ class CoursesRepository {
     String? projectId,
     String? currentLessonId,
     String? lastStop,
+    String? sourceUrl,
     bool clearLastStop = false,
     bool clearProject = false,
+    bool clearSourceUrl = false,
   }) =>
       gate.write((tx) async {
         final s = await tx.stamp('courses', current.id);
@@ -67,6 +71,9 @@ class CoursesRepository {
           lastStop: clearLastStop
               ? const Value(null)
               : (lastStop == null ? const Value.absent() : Value(lastStop)),
+          sourceUrl: clearSourceUrl
+              ? const Value(null)
+              : (sourceUrl == null ? const Value.absent() : Value(sourceUrl)),
           updatedAt: s.updatedAtMs,
           hlc: s.hlc,
         );
@@ -76,6 +83,8 @@ class CoursesRepository {
         return next;
       });
 
+  /// Soft delete: the course is tombstoned and its children are detached
+  /// (never cascaded — spec §5.1).
   Future<void> trash(String courseId) => gate.write((tx) async {
         final c = await (tx.db.select(tx.db.courses)
               ..where((x) => x.id.equals(courseId)))
@@ -88,10 +97,22 @@ class CoursesRepository {
           updatedAt: Value(s.updatedAtMs),
           hlc: Value(s.hlc),
         ));
+        // Detach the knowledge items and the tasks that pointed at this
+        // course: they survive, unclassified.
+        await (tx.db.update(tx.db.items)
+              ..where((i) => i.courseId.equals(courseId)))
+            .write(ItemsCompanion(
+          courseId: const Value(null),
+          lessonId: const Value(null),
+          updatedAt: Value(s.updatedAtMs),
+          hlc: Value(s.hlc),
+        ));
       });
 
+  /// The live course (null once it is in the trash).
   Future<Course?> byId(String id) =>
-      (db.select(db.courses)..where((c) => c.id.equals(id))).getSingleOrNull();
+      (db.select(db.courses)..where((c) => c.id.equals(id) & c.deletedAt.isNull()))
+          .getSingleOrNull();
 
   Stream<List<Course>> watchList({String? status, bool includeArchived = false}) {
     final q = db.select(db.courses)..where((c) => c.deletedAt.isNull());

@@ -303,39 +303,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickShortcut(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
     final scope = AppScope.of(context);
-    final controller = TextEditingController(text: _shortcut);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.captureShortcut),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l.captureShortcutHint),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text(l.save),
-          ),
-        ],
-      ),
+    final result = await showTextPrompt(
+      context,
+      title: l.captureShortcut,
+      label: l.captureShortcutHint,
+      initialValue: _shortcut,
     );
-    controller.dispose();
     if (result == null) return;
     final shortcut = result.trim();
     await scope.settings
@@ -388,33 +361,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _editServerAddress(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
     final scope = AppScope.of(context);
-    final controller = TextEditingController(text: _serverAddress);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.serverAddress),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textDirection: TextDirection.ltr,
-          decoration: InputDecoration(
-            hintText: '192.168.1.10:8443',
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text(l.save),
-          ),
-        ],
-      ),
+    final result = await showTextPrompt(
+      context,
+      title: l.serverAddress,
+      hint: '192.168.1.10:8443',
+      initialValue: _serverAddress,
     );
-    controller.dispose();
     if (result == null) return;
     await scope.settings
         .set(SettingsRepository.keyServerAddress, result.trim());

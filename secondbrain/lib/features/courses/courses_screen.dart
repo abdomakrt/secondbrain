@@ -8,6 +8,7 @@ import '../common/widgets/common_widgets.dart';
 import '../common/widgets/progress_bar.dart';
 import '../shell/app_shell.dart';
 import 'course_detail_screen.dart';
+import 'course_edit_screen.dart';
 
 /// Courses screen (UI_SPEC §5, UI-11).
 ///
@@ -22,6 +23,32 @@ class CoursesScreen extends StatefulWidget {
 
 class _CoursesScreenState extends State<CoursesScreen> {
   String _filter = 'active';
+
+  /// Opens the edit form of a course.
+  Future<void> _edit(BuildContext context, Course course) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CourseEditScreen(courseId: course.id),
+      ),
+    );
+  }
+
+  /// Moves a course to the trash (soft delete — the lessons survive).
+  Future<void> _delete(BuildContext context, Course course) async {
+    final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final confirmed = await confirmDialog(
+      context,
+      title: l.deleteCourse,
+      message: l.deleteCourseConfirm,
+      confirmLabel: l.deleteCourse,
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await scope.courses.trash(course.id);
+    if (!context.mounted) return;
+    showToast(context, l.movedToTrash);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +101,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       title: course.title,
                       builder: (_) => CourseDetailScreen(courseId: course.id),
                     ),
+                    onEdit: () => _edit(context, course),
+                    onDelete: () => _delete(context, course),
                   );
                 },
               );
@@ -86,10 +115,17 @@ class _CoursesScreenState extends State<CoursesScreen> {
 }
 
 class _CourseCard extends StatefulWidget {
-  const _CourseCard({required this.course, required this.onTap});
+  const _CourseCard({
+    required this.course,
+    required this.onTap,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final Course course;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   State<_CourseCard> createState() => _CourseCardState();
@@ -162,8 +198,47 @@ class _CourseCardState extends State<_CourseCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (widget.onEdit != null || widget.onDelete != null)
+                    PopupMenuButton<String>(
+                      tooltip: l.options,
+                      onSelected: (value) {
+                        if (value == 'edit') widget.onEdit?.call();
+                        if (value == 'delete') widget.onDelete?.call();
+                      },
+                      itemBuilder: (context) => [
+                        if (widget.onEdit != null)
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text(l.editCourse),
+                          ),
+                        if (widget.onDelete != null)
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text(l.deleteCourse),
+                          ),
+                      ],
+                    ),
                 ],
               ),
+              if ((widget.course.sourceUrl ?? '').isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.link,
+                        size: 14, color: theme.colorScheme.outline),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        widget.course.sourceUrl!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textDirection: TextDirection.ltr,
+                        style: theme.textTheme.labelSmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               if (widget.course.description.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(

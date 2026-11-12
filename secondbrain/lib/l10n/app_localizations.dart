@@ -2301,6 +2301,192 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المزامنة بين الأجهزة غير مفعّلة في هذه النسخة — البيانات محلية على هذا الجهاز.'**
   String get syncNotEnabledYet;
+
+  /// No description provided for @addLesson.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة درس'**
+  String get addLesson;
+
+  /// No description provided for @addUnit.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة وحدة'**
+  String get addUnit;
+
+  /// No description provided for @lessonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الدرس'**
+  String get lessonTitle;
+
+  /// No description provided for @unitTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الوحدة'**
+  String get unitTitle;
+
+  /// No description provided for @addLessonToCourse.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة درس إلى الكورس'**
+  String get addLessonToCourse;
+
+  /// No description provided for @addUnitToCourse.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة وحدة إلى الكورس'**
+  String get addUnitToCourse;
+
+  /// No description provided for @deleteCourse.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الكورس'**
+  String get deleteCourse;
+
+  /// No description provided for @deleteProject.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف المشروع'**
+  String get deleteProject;
+
+  /// No description provided for @deleteCourseConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيُنقل الكورس إلى السلة. تبقى الدروس والمعرفة محفوظة.'**
+  String get deleteCourseConfirm;
+
+  /// No description provided for @deleteProjectConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيُنقل المشروع إلى السلة. تبقى المهام والمعرفة محفوظة.'**
+  String get deleteProjectConfirm;
+
+  /// No description provided for @movedToTrash.
+  ///
+  /// In ar, this message translates to:
+  /// **'نُقل إلى السلة'**
+  String get movedToTrash;
+
+  /// No description provided for @editCourse.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الكورس'**
+  String get editCourse;
+
+  /// No description provided for @editProject.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المشروع'**
+  String get editProject;
+
+  /// No description provided for @sourceUrl.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط المصدر'**
+  String get sourceUrl;
+
+  /// No description provided for @sourceUrlHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'https://…'**
+  String get sourceUrlHint;
+
+  /// No description provided for @noSourceUrl.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد رابط'**
+  String get noSourceUrl;
+
+  /// No description provided for @openLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الرابط'**
+  String get openLink;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح الرابط'**
+  String get linkOpenFailed;
+
+  /// No description provided for @linkedFolders.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلدات المرتبطة'**
+  String get linkedFolders;
+
+  /// No description provided for @addFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مجلد'**
+  String get addFolder;
+
+  /// No description provided for @noFolders.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مجلدات مرتبطة'**
+  String get noFolders;
+
+  /// No description provided for @folderMissing.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلد غير موجود'**
+  String get folderMissing;
+
+  /// No description provided for @openFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح المجلد'**
+  String get openFolder;
+
+  /// No description provided for @folderOpenFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح المجلد'**
+  String get folderOpenFailed;
+
+  /// No description provided for @copyPath.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخ المسار'**
+  String get copyPath;
+
+  /// No description provided for @pathCopied.
+  ///
+  /// In ar, this message translates to:
+  /// **'نُسخ المسار'**
+  String get pathCopied;
+
+  /// No description provided for @removeFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة المجلد'**
+  String get removeFolder;
+
+  /// No description provided for @removeFolderConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيُزال ربط المجلد فقط — الملفات تبقى على القرص.'**
+  String get removeFolderConfirm;
+
+  /// No description provided for @desktopOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'على الكمبيوتر فقط'**
+  String get desktopOnly;
+
+  /// No description provided for @folderLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المجلد (اختياري)'**
+  String get folderLabel;
+
+  /// No description provided for @options.
+  ///
+  /// In ar, this message translates to:
+  /// **'خيارات'**
+  String get options;
 }
 
 class _AppLocalizationsDelegate

@@ -25,6 +25,8 @@ class Projects extends Table with SyncedColumns {
   IntColumn get manualProgress => integer().withDefault(const Constant(0))();
   TextColumn get lastStop => text().nullable()();
   TextColumn get nextStep => text().nullable()();
+  // The link the project came from (course page, repository, …).
+  TextColumn get sourceUrl => text().nullable()();
 }
 
 class Milestones extends Table with SyncedColumns {
@@ -62,6 +64,8 @@ class Courses extends Table with SyncedColumns {
   TextColumn get projectId => text().nullable()();
   TextColumn get currentLessonId => text().nullable()();
   TextColumn get lastStop => text().nullable()();
+  // The link the course comes from (a playlist, a site, a PDF…).
+  TextColumn get sourceUrl => text().nullable()();
 }
 
 class CourseUnits extends Table with SyncedColumns {

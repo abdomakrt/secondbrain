@@ -20,6 +20,8 @@ class ProjectCard extends StatelessWidget {
     this.lastActivityAt,
     this.onTap,
     this.onToggleStatus,
+    this.onEdit,
+    this.onDelete,
     this.tasksLoaded = true,
   });
 
@@ -30,6 +32,12 @@ class ProjectCard extends StatelessWidget {
   final int? lastActivityAt;
   final VoidCallback? onTap;
   final VoidCallback? onToggleStatus;
+
+  /// Opens the edit form (project card menu).
+  final VoidCallback? onEdit;
+
+  /// Moves the project to the trash (project card menu).
+  final VoidCallback? onDelete;
 
   /// False while the task list is still loading: the progress is unknown and
   /// must not be presented as «لا مهام».
@@ -92,6 +100,26 @@ class ProjectCard extends StatelessWidget {
                     Chip(
                       label: Text(projectStatusLabel(context, project.status)),
                       visualDensity: VisualDensity.compact,
+                    ),
+                  if (onEdit != null || onDelete != null)
+                    PopupMenuButton<String>(
+                      tooltip: l.options,
+                      onSelected: (value) {
+                        if (value == 'edit') onEdit?.call();
+                        if (value == 'delete') onDelete?.call();
+                      },
+                      itemBuilder: (context) => [
+                        if (onEdit != null)
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text(l.editProject),
+                          ),
+                        if (onDelete != null)
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text(l.deleteProject),
+                          ),
+                      ],
                     ),
                 ],
               ),

@@ -5,18 +5,22 @@ import 'package:secondbrain/l10n/app_localizations.dart';
 import '../../app/app_scope.dart';
 import '../common/widgets/content_width.dart';
 import '../../data/database.dart';
+import '../../data/repositories/local_paths_repository.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../domain/progress.dart';
 import '../common/labels.dart';
 import '../common/widgets/common_widgets.dart';
 import '../common/widgets/db_stream_builder.dart';
 import '../common/widgets/knowledge_card.dart';
+import '../common/widgets/linked_folders.dart';
 import '../common/widgets/progress_bar.dart';
+import '../common/widgets/source_link_tile.dart';
 import '../common/widgets/task_tile.dart';
 import '../knowledge/item_detail_screen.dart';
 import '../knowledge/item_edit_screen.dart';
 import '../shell/app_shell.dart';
 import '../tasks/task_detail_screen.dart';
+import 'project_edit_screen.dart';
 
 /// Project details (UI_SPEC §5, UI-06).
 ///
@@ -49,7 +53,8 @@ class _ProjectDetailViewState extends State<ProjectDetailView>
 
     return StreamBuilder<Project?>(
       stream: (scope.db.select(scope.db.projects)
-            ..where((p) => p.id.equals(widget.projectId)))
+            ..where((p) =>
+                p.id.equals(widget.projectId) & p.deletedAt.isNull()))
           .watchSingleOrNull(),
       builder: (context, snap) {
         final project = snap.data;
@@ -176,6 +181,23 @@ class _Header extends StatelessWidget {
                     icon: const Icon(Icons.swap_horiz),
                     label: Text(l.changeStatus),
                   ),
+                  PopupMenuButton<String>(
+                    tooltip: l.options,
+                    onSelected: (value) {
+                      if (value == 'edit') _editProject(context, project);
+                      if (value == 'delete') _deleteProject(context, project);
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Text(l.editProject),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text(l.deleteProject),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -185,48 +207,49 @@ class _Header extends StatelessWidget {
     );
   }
 
-  Future<void> _editStopPoint(BuildContext context, Project project) async {
-    final l = AppLocalizations.of(context)!;
-    final scope = AppScope.of(context);
-    final lastStop = TextEditingController(text: project.lastStop ?? '');
-    final nextStep = TextEditingController(text: project.nextStep ?? '');
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.stopPointAndNextStep),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: lastStop,
-              decoration: InputDecoration(labelText: l.lastStop),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: nextStep,
-              decoration: InputDecoration(labelText: l.nextStep),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l.save),
-          ),
-        ],
+  Future<void> _editProject(BuildContext context, Project project) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProjectEditScreen(projectId: project.id),
       ),
     );
-    if (saved != true) return;
+  }
+
+  /// Moves the project to the trash (soft delete — tasks and knowledge
+  /// survive, detached).
+  Future<void> _deleteProject(BuildContext context, Project project) async {
+    final l = AppLocalizations.of(context)!;
+    final scope = AppScope.of(context);
+    final confirmed = await confirmDialog(
+      context,
+      title: l.deleteProject,
+      message: l.deleteProjectConfirm,
+      confirmLabel: l.deleteProject,
+      destructive: true,
+    );
+    if (!confirmed) return;
+    await scope.projects.trash(project.id);
+    if (!context.mounted) return;
+    showToast(context, l.movedToTrash);
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+  }
+
+  Future<void> _editStopPoint(BuildContext context, Project project) async {
+    final scope = AppScope.of(context);
+    final result = await showDialog<_StopPoint>(
+      context: context,
+      builder: (_) => _StopPointDialog(
+        lastStop: project.lastStop ?? '',
+        nextStep: project.nextStep ?? '',
+      ),
+    );
+    if (result == null) return;
     await scope.projects.update(
       project,
-      lastStop: lastStop.text.trim(),
-      clearLastStop: lastStop.text.trim().isEmpty,
-      nextStep: nextStep.text.trim(),
-      clearNextStep: nextStep.text.trim().isEmpty,
+      lastStop: result.lastStop,
+      clearLastStop: result.lastStop.isEmpty,
+      nextStep: result.nextStep,
+      clearNextStep: result.nextStep.isEmpty,
     );
   }
 
@@ -281,6 +304,15 @@ class _OverviewTab extends StatelessWidget {
           value: (project.nextStep ?? '').isEmpty ? '—' : project.nextStep!,
         ),
         _Row(label: l.status, value: projectStatusLabel(context, project.status)),
+        const SizedBox(height: 16),
+        Text(l.sourceUrl, style: theme.textTheme.titleSmall),
+        const SizedBox(height: 4),
+        SourceLinkTile(url: project.sourceUrl),
+        const SizedBox(height: 20),
+        LinkedFoldersSection(
+          ownerType: LocalPathsRepository.ownerProject,
+          ownerId: project.id,
+        ),
         const SizedBox(height: 12),
         Text(l.activityLogUnavailable, style: theme.textTheme.bodySmall),
       ],
@@ -538,6 +570,73 @@ class _FilesTab extends StatelessWidget {
               .toList(),
         );
       },
+    );
+  }
+}
+
+
+/// The stop point and the next step of a project (one dialog, two fields).
+class _StopPoint {
+  const _StopPoint(this.lastStop, this.nextStep);
+
+  final String lastStop;
+  final String nextStep;
+}
+
+class _StopPointDialog extends StatefulWidget {
+  const _StopPointDialog({required this.lastStop, required this.nextStep});
+
+  final String lastStop;
+  final String nextStep;
+
+  @override
+  State<_StopPointDialog> createState() => _StopPointDialogState();
+}
+
+class _StopPointDialogState extends State<_StopPointDialog> {
+  late final TextEditingController _lastStop =
+      TextEditingController(text: widget.lastStop);
+  late final TextEditingController _nextStep =
+      TextEditingController(text: widget.nextStep);
+
+  @override
+  void dispose() {
+    _lastStop.dispose();
+    _nextStep.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l.stopPointAndNextStep),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _lastStop,
+            decoration: InputDecoration(labelText: l.lastStop),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nextStep,
+            decoration: InputDecoration(labelText: l.nextStep),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(
+            _StopPoint(_lastStop.text.trim(), _nextStep.text.trim()),
+          ),
+          child: Text(l.save),
+        ),
+      ],
     );
   }
 }
