@@ -38,3 +38,6 @@ Thumbs.db
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# Golden-test failure images (artifacts of a failing run).
+**/failures/
