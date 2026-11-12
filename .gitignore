@@ -1,0 +1,40 @@
+# ===== Flutter / Dart artifacts (applies to every package in the repo) =====
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+*.ipr
+*.iws
+
+# Generated platform glue
+**/flutter/ephemeral/
+**/generated_plugin_registrant.*
+**/GeneratedPluginRegistrant.*
+**/.cxx/
+**/local.properties
+**/key.properties
+**/*.jks
+**/*.keystore
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== App artifacts =====
+# Backup files written by the app or by tests (never commit user data).
+*.sbbackup
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
