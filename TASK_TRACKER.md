@@ -13,7 +13,7 @@
 - [ ] S5: Dry run على Takeout — **مؤجَّل مع Phase 3 (Keep import) إلى v2** بقرار المستخدم.
 - [x] S6: Markdown RTL — سلوك flutter_markdown موثّق ومُثبَّت: الفقرة العربية ترث RTL من البيئة ✓، السطر المفرد يُعرض كسطر جديد (`softLineBreak: true`) ✓، وكتل الكود **لا تُجبر LTR في المكتبة** (ترث الاتجاه المحيط) — أُنشئ `ArabicMarkdownBody` (بتاص `lib/features/knowledge/widgets/arabic_markdown.dart`) يجبر كتل الكود على LTR ويُستخدم في الشاشتين. الاختبارات: `test/spikes/s6_markdown_rtl_test.dart`.
 - [x] تهيئة l10n: `app_ar.arb` (~95 مفتاحًا) + `Directionality` RTL للتطبيق كله + **خط عربي مضمّن** (Noto Sans Arabic Regular+Bold من notofonts v2.013 في `assets/fonts/` مضبوط كـ fontFamily افتراضي).
-- [x] إعداد CI (`.github/workflows/ci.yml`: analyze + tests كاملة + بناء Linux debug). **ملاحظة**: مجلد العمل ليس مستودع git بعد — CI سيعمل فور الرفع إلى GitHub.
+- [x] إعداد CI (`.github/workflows/ci.yml`: analyze + tests كاملة + بناء Linux debug). **ملاحظة**: مجلد العمل أصبح مستودع git (تهيئة 2026-11-12، فرع `main`) — CI سيعمل فور الرفع إلى GitHub.
 - [x] Gate: الحزم بقيد caret (^) وليس pinned (قرار موثق في Phase 1)؛ S1/S6 أثبتا صلاحية الاختيارات، S2/S3 تتحقق عند توفر الأجهزة.
 
 ## Phase 1 — Infrastructure & Database Setup (الحالية)
@@ -122,6 +122,18 @@
 - [x] شاشة الإعدادات (UI-15): اللغة والمظهر، تخصيص لوحة التحكم، الوسوم وأنواع المحتوى، إعدادات المهام والتنبيهات، اختصار الالتقاط، الأجهزة المقترنة، عنوان الخادم وحالة الاتصال، النسخ الاحتياطي والاستعادة، تصدير البيانات، معلومات التطبيق.
 - [ ] اختبار تحمل (20k عنصر، 5k مرفق) + p95 بحث <200ms.
 - [ ] دليل تثبيت.
+
+## Phase 10 — Clean Code & Repo Hygiene (2026-11-12)
+> الحالة: **مكتملة** — `flutter analyze` نظيف، `flutter test` 126/126 ناجحة، بناء Linux debug ناجح، والمجلد مستودع git (فرع `main`).
+- [x] حذف مخلفات البناء (`build/`, `.dart_tool/`, `.idea/`, `linux/flutter/ephemeral/`) من `secondbrain/` و`spikes/s1_hotkey/` — من 767 MB إلى 2.9 MB.
+- [x] حذف نسخة احتياطية متسربة (`secondbrain-*.sbbackup`) من جذر الحزمة + استبعاد `*.sbbackup` و`*.sqlite` وصور فشل الـ goldens من git.
+- [x] `.gitignore` جذري (Flutter/Dart + IDE + مخرجات التطبيق) وتهيئة مستودع git + أول commit.
+- [x] `ItemTypesRepository` بدل 10 استعلامات أنواع مكرّرة (مقروءة عبر `scope.itemTypes`).
+- [x] مكوّنات مشتركة بدل نسخ/لصق: `FilterChipMenu`, `KnowledgeFilterBar` (شاشتا المعرفة والبحث), `MetaLabel`, `LoadingView`, `EmptyState` موحّد.
+- [x] مساعدات مشتركة: `showOptionSheet`, `askForTags`, `splitTagNames`, `itemDisplayTitle`.
+- [x] نقل كشف نوع الملف (`mimeFromName`) من الواجهة إلى `AttachmentsRepository` (قرار طبقة البيانات).
+- [x] **إصلاح سلوكي**: عنصر «الكل» في قوائم التصفية كان لا يمسح الفلتر (`PopupMenuButton` يُهمل القيمة `null`) — صار له قيمة مُميّزة.
+- [x] 10 اختبارات جديدة: `test/data/item_types_repository_test.dart`, `test/features/dialogs_test.dart`, `test/features/filter_chip_menu_test.dart`.
 
 ## خارج v1 (لا تُنفَّذ الآن)
 - **استيراد Google Keep (Phase 3 كاملة — مؤجَّلة إلى v2 بقرار المستخدم).**

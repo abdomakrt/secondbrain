@@ -1,17 +1,30 @@
-# s1_hotkey
+# Spike S1 — global hotkey + tray + PRIMARY selection (X11)
 
-A new Flutter project.
+Throwaway prototype used in Phase 0 to answer one question: **can a global
+hot key be registered and its events received on this machine (X11 + Cinnamon +
+Mesa)?**
 
-## Getting Started
+## What it does
+`lib/main.dart` registers `Ctrl+Alt+J` system-wide and, on every trigger,
+prints the latency, the PRIMARY selection (`xclip`) and the active window
+title (`xdotool`) in one line:
 
-This project is a starting point for a Flutter application.
+```
+S1HIT t0=… t1=… latency=…ms primary="…" title="…"
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Outcome
+- Tray, PRIMARY selection and window title: **work**.
+- `hotkey_manager` / `XGrabKey` event delivery: **does not work** on this
+  system → superseded by the `xinput test-xi2 --root` listener implemented in
+  the app (`secondbrain/lib/platform/desktop/x11_hotkey.dart`).
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## How to run
+```bash
+flutter run -d linux          # needs the Linux desktop build deps
+```
+Then press `Ctrl+Alt+J` in any window and watch the log.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+> This spike is kept for reference only. The default counter widget test that
+> came with `flutter create` was removed — it referenced a widget that never
+> existed in this prototype.

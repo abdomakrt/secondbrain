@@ -37,12 +37,19 @@ Personal productivity/knowledge app: Flutter + Dart, single codebase, Android + 
 ## Planned layout
 `lib/{core,data,domain,sync,importers,backup,platform/{desktop,android},features/*,l10n/app_ar.arb}`, plus `test/`, `integration_test/`, `docs/`.
 
+## Shared UI building blocks (no copy-paste)
+- `lib/features/common/widgets/common_widgets.dart` — `EmptyState`, `SectionHeader`, `LoadingView`, `confirmDialog`, `showToast`, `showErrorWithRetry`.
+- `lib/features/common/widgets/filter_chip_menu.dart` — `FilterChipMenu` + `FilterOption` (every filter chip).
+- `lib/features/common/widgets/knowledge_filter_bar.dart` — `KnowledgeFilterBar` (type/project/tag chips for knowledge + search).
+- `lib/features/common/widgets/meta_label.dart` — `MetaLabel` (icon + small text).
+- `lib/features/common/dialogs.dart` — `showOptionSheet`, `askForTags`, `splitTagNames`.
+- `lib/features/common/labels.dart` — status labels + `itemDisplayTitle`.
+- Read content types through `ItemTypesRepository` (`scope.itemTypes`), never with an inline query.
+
 ## Commands
 Flutter 3.47.9 + Dart 3.13.7 installed at `/media/storage/tools/flutter/bin` (already in `~/.bashrc`). App code lives in `secondbrain/`; docs stay at the repo root.
-- System build deps for Linux desktop (clang/cmake/ninja/libgtk-3-dev/…) are NOT installed yet — needs sudo; only blocks `flutter run` on desktop, not `flutter test`/codegen.
-- `sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev xclip xdotool`
-- `flutter create secondbrain` (Android + Linux), then `flutter doctor`.
-- `flutter test` / `flutter analyze` once the project exists.
+- System build deps for Linux desktop (clang/cmake/ninja/libgtk-3-dev/…) are installed — `flutter build linux --debug` works.
+- `flutter test` / `flutter analyze` from `secondbrain/` (the repo root is a git repository; CI runs on the `secondbrain` working directory).
 - Do not pin package versions in `pubspec.yaml` until spikes S1–S6 pass.
 
 ## Conventions
