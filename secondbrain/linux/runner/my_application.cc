@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "resources/app_icon.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -16,7 +17,12 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
-  gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+  GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
+  gtk_widget_show(toplevel);
+  // The icon is set once the window is realized, so the window manager
+  // picks it up for the taskbar and the Alt+Tab list.
+  g_autoptr(GdkPixbuf) icon = app_icon_pixbuf();
+  gtk_window_set_icon(GTK_WINDOW(toplevel), icon);
 }
 
 // Implements GApplication::activate.
@@ -45,11 +51,22 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "secondbrain");
+    gtk_header_bar_set_title(header_bar, "العقل الثاني");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "secondbrain");
+    gtk_window_set_title(window, "العقل الثاني");
+  }
+
+  // The application icon: the themed name when the icon is installed on the
+  // system (so the window manager picks it up for the taskbar), otherwise the
+  // embedded picture.
+  GtkIconTheme* theme = gtk_icon_theme_get_default();
+  if (gtk_icon_theme_has_icon(theme, "secondbrain")) {
+    gtk_window_set_icon_name(window, "secondbrain");
+  } else {
+    g_autoptr(GdkPixbuf) app_icon = app_icon_pixbuf();
+    gtk_window_set_icon(window, app_icon);
   }
 
   gtk_window_set_default_size(window, 1280, 720);
